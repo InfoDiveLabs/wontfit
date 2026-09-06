@@ -1,11 +1,11 @@
 """Command line entry point.
 
-``phoneframes``        serve the proxy and harness (the default command)
-``phoneframes shoot``  PNG screenshots plus a contact sheet (needs Playwright)
-``phoneframes check``  headless diagnostics with a CI-friendly exit code (needs Playwright)
-``phoneframes init``   write a starter ``phoneframes.toml``
+``wontfit``        serve the proxy and harness (the default command)
+``wontfit shoot``  PNG screenshots plus a contact sheet (needs Playwright)
+``wontfit check``  headless diagnostics with a CI-friendly exit code (needs Playwright)
+``wontfit init``   write a starter ``wontfit.toml``
 
-A ``phoneframes.toml`` (or ``[tool.phoneframes]`` in ``pyproject.toml``) found in
+A ``wontfit.toml`` (or ``[tool.wontfit]`` in ``pyproject.toml``) found in
 the current directory or any parent supplies defaults; flags override it.
 """
 
@@ -156,7 +156,7 @@ def _shared(parser: argparse.ArgumentParser) -> None:
         "--insecure", action="store_true", help="accept self-signed HTTPS upstream certificates"
     )
     parser.add_argument(
-        "--no-config", action="store_true", help=f"ignore any {FILE_NAME} / pyproject.toml [tool.phoneframes]"
+        "--no-config", action="store_true", help=f"ignore any {FILE_NAME} / pyproject.toml [tool.wontfit]"
     )
 
 
@@ -177,11 +177,11 @@ def _browser_shared(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     """The ``serve`` parser (the default command)."""
     parser = argparse.ArgumentParser(
-        prog="phoneframes",
-        description="Preview a local web app at phone and tablet sizes, side by side, in a desktop browser.",
-        epilog="Subcommands: phoneframes shoot | check | init  (each has --help)",
+        prog="wontfit",
+        description="See your running app at phone and tablet widths side by side, and what does not fit.",
+        epilog="Subcommands: wontfit shoot | check | init  (each has --help)",
     )
-    parser.add_argument("--version", action="version", version=f"phoneframes {__version__}")
+    parser.add_argument("--version", action="version", version=f"wontfit {__version__}")
     _shared(parser)
     parser.add_argument(
         "--port",
@@ -224,7 +224,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def build_shoot_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="phoneframes shoot",
+        prog="wontfit shoot",
         description="Write a PNG per page x width plus a contact sheet, using Playwright (optional extra).",
     )
     _shared(parser)
@@ -239,7 +239,7 @@ def build_shoot_parser() -> argparse.ArgumentParser:
 
 def build_check_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="phoneframes check",
+        prog="wontfit check",
         description="Run the overflow / tap-target / small-text diagnostics headlessly and exit non-zero "
         "on selected findings, using Playwright (optional extra).",
     )
@@ -258,7 +258,7 @@ def build_check_parser() -> argparse.ArgumentParser:
 
 def build_init_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="phoneframes init",
+        prog="wontfit init",
         description=f"Write a commented starter {FILE_NAME} in the current directory.",
     )
     parser.add_argument("--upstream", type=parse_upstream, default=None, help="pre-fill the upstream URL")
@@ -338,10 +338,10 @@ def serve(ns: argparse.Namespace) -> int:
     try:
         server = ProxyServer(config, make_route(state, watcher, ns.watch_interval))
     except OSError as exc:
-        print(f"phoneframes: cannot listen on 127.0.0.1:{config.port}: {exc}", file=sys.stderr)
+        print(f"wontfit: cannot listen on 127.0.0.1:{config.port}: {exc}", file=sys.stderr)
         return 1
     url = state.url(config.proxy_origin)
-    print(f"phoneframes {__version__}: proxying {config.upstream} on {config.proxy_origin}")
+    print(f"wontfit {__version__}: proxying {config.upstream} on {config.proxy_origin}")
     if ns.config_path:
         print(f"  config   {ns.config_path}")
     print(f"  harness  {url}")
@@ -352,7 +352,7 @@ def serve(ns: argparse.Namespace) -> int:
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nphoneframes: bye")
+        print("\nwontfit: bye")
     finally:
         server.server_close()
     return 0
@@ -365,9 +365,9 @@ def init(ns: argparse.Namespace) -> int:
     try:
         write_starter(path, ns.upstream)
     except FileExistsError:
-        print(f"phoneframes init: {path} exists; pass --force to overwrite", file=sys.stderr)
+        print(f"wontfit init: {path} exists; pass --force to overwrite", file=sys.stderr)
         return 1
-    print(f"wrote {path}; edit it, commit it, and contributors can just run `phoneframes`")
+    print(f"wrote {path}; edit it, commit it, and contributors can just run `wontfit`")
     return 0
 
 

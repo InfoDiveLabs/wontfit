@@ -1,14 +1,14 @@
 /*
- * phoneframes diagnostics.
+ * wontfit diagnostics.
  *
  * Runs in the harness window and reaches into each same-origin iframe's
  * document. Everything here is best-effort: any frame that navigated to
  * another origin, or has not finished loading, throws on access and the
  * caller treats that as "no data". Nothing here mutates the page's own DOM
- * except for overlay boxes tagged `data-phoneframes`, which are removed
+ * except for overlay boxes tagged `data-wontfit`, which are removed
  * before every re-run.
  *
- * Exposed as `window.PhoneframesDiagnostics` with:
+ * Exposed as `window.WontfitDiagnostics` with:
  *   canAccess(frame)                     -> boolean
  *   analyze(doc)                         -> report (see below)
  *   renderTapOverlay(doc, targets)       -> draws boxes around small tap targets
@@ -36,7 +36,7 @@
   }
 
   function isOurs(el) {
-    return !!(el.closest && el.closest("[data-phoneframes]"));
+    return !!(el.closest && el.closest("[data-wontfit]"));
   }
 
   function classLabel(el) {
@@ -138,19 +138,19 @@
   /* ---- overlays -------------------------------------------------------------- */
 
   function overlayLayer(doc, kind) {
-    var id = "__phoneframes-" + kind;
+    var id = "__wontfit-" + kind;
     var layer = doc.getElementById(id);
     if (layer) return layer;
     layer = doc.createElement("div");
     layer.id = id;
-    layer.setAttribute("data-phoneframes", kind);
+    layer.setAttribute("data-wontfit", kind);
     layer.style.cssText = "position:absolute;top:0;left:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:2147483647;";
     doc.documentElement.appendChild(layer);
     return layer;
   }
 
   function clearOverlays(doc, kind) {
-    var sel = kind ? "[data-phoneframes='" + kind + "']" : "[data-phoneframes]";
+    var sel = kind ? "[data-wontfit='" + kind + "']" : "[data-wontfit]";
     var nodes = doc.querySelectorAll(sel);
     for (var i = 0; i < nodes.length; i++) nodes[i].parentNode.removeChild(nodes[i]);
   }
@@ -254,7 +254,7 @@
     };
   }
 
-  global.PhoneframesDiagnostics = {
+  global.WontfitDiagnostics = {
     TAP_MIN: TAP_MIN,
     TEXT_MIN: TEXT_MIN,
     canAccess: canAccess,

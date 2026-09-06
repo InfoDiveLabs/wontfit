@@ -6,8 +6,8 @@ import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
 
-from phoneframes import PRESETS
-from phoneframes.cli import (
+from wontfit import PRESETS
+from wontfit.cli import (
     config_from_args,
     parse_args,
     parse_cookie,
@@ -15,7 +15,7 @@ from phoneframes.cli import (
     parse_pages,
     parse_widths,
 )
-from phoneframes.shoot import planned_files, slug_for
+from wontfit.shoot import planned_files, slug_for
 
 
 class ValueParserTests(unittest.TestCase):

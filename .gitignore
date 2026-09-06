@@ -11,4 +11,4 @@ shots/
 .DS_Store
 .venv-shots/
 *.pid
-phoneframes-report.json
+wontfit-report.json

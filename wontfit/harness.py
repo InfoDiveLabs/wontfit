@@ -1,4 +1,4 @@
-"""The harness page (``/__phoneframes``) and its small JSON endpoints.
+"""The harness page (``/__wontfit``) and its small JSON endpoints.
 
 The page itself is a static asset (``assets/harness.html``) with the
 diagnostics script (``assets/diagnostics.js``) inlined at render time, plus a
@@ -25,8 +25,8 @@ if TYPE_CHECKING:  # pragma: no cover
     from .proxy import HarnessRoute, ProxyHandler
     from .watch import Watcher
 
-DIAGNOSTICS_PLACEHOLDER = "/*__PHONEFRAMES_DIAGNOSTICS__*/"
-CONFIG_PLACEHOLDER = "/*__PHONEFRAMES_CONFIG__*/null"
+DIAGNOSTICS_PLACEHOLDER = "/*__WONTFIT_DIAGNOSTICS__*/"
+CONFIG_PLACEHOLDER = "/*__WONTFIT_CONFIG__*/null"
 
 
 @dataclass
@@ -99,7 +99,7 @@ class HarnessState:
 
 
 def _asset(name: str) -> str:
-    return resources.files("phoneframes").joinpath("assets", name).read_text(encoding="utf-8")
+    return resources.files("wontfit").joinpath("assets", name).read_text(encoding="utf-8")
 
 
 def harness_config(state: HarnessState, watch_interval: float, watch_description: str) -> dict[str, object]:
@@ -126,7 +126,7 @@ def render_harness(state: HarnessState, watch_interval: float = 2.0, watch_descr
 
 
 def make_route(state: HarnessState, watcher: Watcher, watch_interval: float) -> HarnessRoute:
-    """Build the handler callback for ``/__phoneframes`` and ``/__phoneframes/watch``."""
+    """Build the handler callback for ``/__wontfit`` and ``/__wontfit/watch``."""
 
     def route(handler: ProxyHandler, path: str) -> bool:
         if path == HARNESS_PATH or path == HARNESS_PATH + "/":

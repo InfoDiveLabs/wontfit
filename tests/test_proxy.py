@@ -6,7 +6,7 @@ import http.server
 import threading
 import unittest
 
-from phoneframes.proxy import (
+from wontfit.proxy import (
     ProxyConfig,
     ProxyServer,
     build_upstream_headers,

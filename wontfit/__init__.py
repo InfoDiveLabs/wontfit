@@ -1,8 +1,10 @@
-"""phoneframes: preview a local web app at phone and tablet sizes, side by side.
+"""wontfit: see your running app at phone and tablet widths, side by side.
 
 A zero-dependency reverse proxy that strips the headers which block iframing
 (``X-Frame-Options`` and CSP ``frame-ancestors``) plus a browser harness that
-lays out pages as device-sized frames with layout diagnostics and live reload.
+lays out pages as device-sized frames and says what does not fit: horizontal
+overflow with the element that caused it, tap targets under 44x44 CSS px, and
+text under 12px. The same checks run headlessly in CI via ``wontfit check``.
 
 Development tool only. It binds to 127.0.0.1 and must never be exposed.
 """
@@ -23,7 +25,7 @@ PRESETS = {
 }
 
 #: Path prefix reserved for the harness and its endpoints. Anything else is proxied.
-HARNESS_PATH = "/__phoneframes"
+HARNESS_PATH = "/__wontfit"
 
-#: Findings ``phoneframes check --fail-on`` can select.
+#: Findings ``wontfit check --fail-on`` can select.
 CHECK_KINDS = ("overflow", "taps", "text")

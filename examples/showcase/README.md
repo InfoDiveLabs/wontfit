@@ -2,14 +2,14 @@
 
 A fake expense-tracking product site plus its app dashboard, served by a
 standard-library Python server that sends `X-Frame-Options: DENY` and a CSP
-with `frame-ancestors 'none'`. Try phoneframes against it without having your
+with `frame-ancestors 'none'`. Try wontfit against it without having your
 own app running:
 
 ```sh
 make showcase
 # or by hand:
 python3 examples/showcase/server.py &
-phoneframes --upstream http://localhost:3939 --pages /,/pricing,/dashboard,/terms --open
+wontfit --upstream http://localhost:3939 --pages /,/pricing,/dashboard,/terms --open
 ```
 
 ## Planted bugs

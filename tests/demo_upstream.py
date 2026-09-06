@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""A throwaway upstream that refuses to be framed, for trying phoneframes out.
+"""A throwaway upstream that refuses to be framed, for trying wontfit out.
 
     python3 tests/demo_upstream.py --port 3999
-    phoneframes --upstream http://localhost:3999 --pages /,/wide --open
+    wontfit --upstream http://localhost:3999 --pages /,/wide --open
 
 Every response carries ``X-Frame-Options: DENY`` and a CSP with
 ``frame-ancestors 'none'`` so you can watch the proxy strip them. ``/wide``

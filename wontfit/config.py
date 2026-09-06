@@ -1,13 +1,13 @@
-"""Project configuration: ``phoneframes.toml`` or ``[tool.phoneframes]`` in ``pyproject.toml``.
+"""Project configuration: ``wontfit.toml`` or ``[tool.wontfit]`` in ``pyproject.toml``.
 
-The file is discovered from the current directory upward, so ``phoneframes``
+The file is discovered from the current directory upward, so ``wontfit``
 run anywhere inside a project picks it up. Values become argparse *defaults*,
 so any flag on the command line still wins.
 
 Python 3.11+ parses TOML with :mod:`tomllib`. Older interpreters use
-:func:`parse_toml_subset`, which understands the subset a phoneframes config
+:func:`parse_toml_subset`, which understands the subset a wontfit config
 needs: comments, ``[sections]``, strings, numbers, booleans and arrays. For
-``pyproject.toml`` only the ``[tool.phoneframes]`` block is fed to it, so the
+``pyproject.toml`` only the ``[tool.wontfit]`` block is fed to it, so the
 rest of that file may use any TOML it likes.
 """
 
@@ -24,9 +24,9 @@ try:  # Python 3.11+
 except ModuleNotFoundError:  # pragma: no cover - depends on interpreter
     tomllib = None  # type: ignore[assignment]
 
-FILE_NAME = "phoneframes.toml"
+FILE_NAME = "wontfit.toml"
 PYPROJECT = "pyproject.toml"
-SECTION = "tool.phoneframes"
+SECTION = "tool.wontfit"
 
 #: Accepted keys and the argparse destination each maps to.
 KEYS = {
@@ -46,7 +46,7 @@ KEYS = {
     "fail_on": "fail_on",
 }
 
-STARTER = """# phoneframes configuration. Commit this so contributors can just run `phoneframes`.
+STARTER = """# wontfit configuration. Commit this so contributors can just run `wontfit`.
 # Every key is optional; command-line flags override anything set here.
 
 # The app to preview.
@@ -76,10 +76,10 @@ watch_interval = 2
 # Accept self-signed certificates on an HTTPS upstream.
 insecure = false
 
-# Where `phoneframes shoot` writes PNGs.
+# Where `wontfit shoot` writes PNGs.
 out = "shots"
 
-# Which `phoneframes check` findings fail the build: any of overflow, taps, text.
+# Which `wontfit check` findings fail the build: any of overflow, taps, text.
 fail_on = ["overflow"]
 
 # Cookies and headers sent with every upstream request.
@@ -177,7 +177,7 @@ def _split_array(inner: str, line_no: int) -> list[Any]:
 
 
 def parse_toml_subset(text: str) -> dict[str, Any]:
-    """Parse the TOML subset phoneframes uses. Sections nest by dotted name."""
+    """Parse the TOML subset wontfit uses. Sections nest by dotted name."""
     root: dict[str, Any] = {}
     table = root
     lines = text.splitlines()
@@ -240,7 +240,7 @@ def extract_section(text: str, section: str) -> str:
 
 
 def read_config_file(path: Path) -> dict[str, Any] | None:
-    """Load the phoneframes table from one file, or ``None`` if the file has none."""
+    """Load the wontfit table from one file, or ``None`` if the file has none."""
     text = path.read_text(encoding="utf-8")
     if path.name == PYPROJECT:
         if tomllib is not None:
@@ -256,7 +256,7 @@ def read_config_file(path: Path) -> dict[str, Any] | None:
 
 
 def find_config(start: Path | None = None) -> tuple[Path, dict[str, Any]] | None:
-    """Walk from ``start`` (default cwd) upward; ``phoneframes.toml`` beats ``pyproject.toml``."""
+    """Walk from ``start`` (default cwd) upward; ``wontfit.toml`` beats ``pyproject.toml``."""
     here = (start or Path.cwd()).resolve()
     for directory in (here, *here.parents):
         for name in (FILE_NAME, PYPROJECT):

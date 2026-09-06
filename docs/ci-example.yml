@@ -2,7 +2,7 @@
 # and keep screenshots of every page x width as a downloadable artifact.
 #
 # Copy to .github/workflows/mobile-check.yml and replace the two "your app" steps.
-# The phoneframes flags can move into a committed phoneframes.toml.
+# The wontfit flags can move into a committed wontfit.toml.
 
 name: mobile-check
 
@@ -12,7 +12,7 @@ on:
     branches: [main]
 
 jobs:
-  phoneframes:
+  wontfit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,30 +34,30 @@ jobs:
           done
           curl -sf http://localhost:3000/ > /dev/null || { cat app.log; exit 1; }
 
-      # --- phoneframes --------------------------------------------------------------
-      - name: Install phoneframes with the Playwright extra
+      # --- wontfit --------------------------------------------------------------
+      - name: Install wontfit with the Playwright extra
         run: |
-          python -m pip install --quiet 'phoneframes[shoot]'   # or: 'git+https://github.com/<org>/phoneframes#egg=phoneframes[shoot]'
+          python -m pip install --quiet 'wontfit[shoot]'   # or: 'git+https://github.com/Suraj-Tiwari/wontfit#egg=wontfit[shoot]'
           python -m playwright install --with-deps chromium
 
       - name: Check phone layouts (fails on overflow)
         run: |
-          phoneframes check --upstream http://localhost:3000 \
+          wontfit check --upstream http://localhost:3000 \
             --pages /,/pricing,/dashboard --widths se,iphone15,pixel8 \
-            --fail-on overflow --json phoneframes-report.json
+            --fail-on overflow --json wontfit-report.json
 
       - name: Screenshots (always, even when the check failed)
         if: always()
         run: |
-          phoneframes shoot --upstream http://localhost:3000 \
+          wontfit shoot --upstream http://localhost:3000 \
             --pages /,/pricing,/dashboard --widths se,iphone15,pixel8 --out shots
 
       - name: Upload report and screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: phoneframes
+          name: wontfit
           path: |
-            phoneframes-report.json
+            wontfit-report.json
             shots/
           retention-days: 14

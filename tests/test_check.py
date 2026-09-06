@@ -1,13 +1,13 @@
-"""Report shaping, exit codes and the table for ``phoneframes check`` (no browser needed)."""
+"""Report shaping, exit codes and the table for ``wontfit check`` (no browser needed)."""
 
 import argparse
 import io
 import unittest
 from contextlib import redirect_stderr
 
-from phoneframes.check import FrameResult, build_report, exit_code, failures, format_table, shape_result
-from phoneframes.cli import parse_args, parse_fail_on
-from phoneframes.shoot import contact_sheet_html, sheet_columns, sheet_viewport_width
+from wontfit.check import FrameResult, build_report, exit_code, failures, format_table, shape_result
+from wontfit.cli import parse_args, parse_fail_on
+from wontfit.shoot import contact_sheet_html, sheet_columns, sheet_viewport_width
 
 RAW_BAD = {
     "overflow": {"amount": 385, "culprits": [{"label": "img.shot", "left": 20, "right": 780, "width": 760}]},

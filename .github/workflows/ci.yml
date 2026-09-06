@@ -23,8 +23,8 @@ jobs:
       - name: Install and smoke-test the CLI
         run: |
           python -m pip install --quiet .
-          phoneframes --version
-          python -m phoneframes --help > /dev/null
+          wontfit --version
+          python -m wontfit --help > /dev/null
 
   lint:
     name: ruff

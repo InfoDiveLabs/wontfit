@@ -3,9 +3,9 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "phoneframes"
+name = "wontfit"
 version = "0.1.0"
-description = "Preview any local web app at phone and tablet widths, side by side, in your desktop browser - even when it sends X-Frame-Options."
+description = "See your running app at phone and tablet widths side by side, and find out what won't fit before your users do."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
@@ -33,17 +33,19 @@ shoot = ["playwright>=1.40"]
 dev = ["ruff"]
 
 [project.scripts]
-phoneframes = "phoneframes.cli:main"
+wontfit = "wontfit.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/infodive/phoneframes"
-Changelog = "https://github.com/infodive/phoneframes/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Suraj-Tiwari/wontfit"
+Repository = "https://github.com/Suraj-Tiwari/wontfit"
+Issues = "https://github.com/Suraj-Tiwari/wontfit/issues"
+Changelog = "https://github.com/Suraj-Tiwari/wontfit/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["phoneframes"]
+packages = ["wontfit"]
 
 [tool.setuptools.package-data]
-phoneframes = ["assets/*.html", "assets/*.js"]
+wontfit = ["assets/*.html", "assets/*.js"]
 
 [tool.ruff]
 line-length = 110

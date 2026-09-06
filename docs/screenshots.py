@@ -2,13 +2,13 @@
 """Regenerate docs/images/*.png from the Ledgerly showcase. Maintainers only.
 
 Needs a virtualenv with Playwright (plus Chromium) and Pillow; neither is a
-phoneframes dependency:
+wontfit dependency:
 
     python3 -m venv .venv-shots && .venv-shots/bin/pip install playwright pillow
     .venv-shots/bin/python -m playwright install chromium
     .venv-shots/bin/python docs/screenshots.py        # or: PY=.venv-shots/bin/python make screenshots
 
-Starts the showcase server and phoneframes on spare ports, drives the harness
+Starts the showcase server and wontfit on spare ports, drives the harness
 in a 1400px-wide Chromium, saves each capture as a palette PNG (well under
 400 KB), and stops both servers. Run from the repository root.
 """
@@ -56,7 +56,7 @@ def optimise(path: Path) -> int:
 
 
 def harness_url(query: str) -> str:
-    return f"http://127.0.0.1:{PROXY_PORT}/__phoneframes?{query}"
+    return f"http://127.0.0.1:{PROXY_PORT}/__wontfit?{query}"
 
 
 def wait_frames(page) -> None:
@@ -81,7 +81,7 @@ def main() -> int:
     from playwright.sync_api import sync_playwright
 
     OUT.mkdir(parents=True, exist_ok=True)
-    trigger_dir = Path(tempfile.mkdtemp(prefix="phoneframes-shots-"))
+    trigger_dir = Path(tempfile.mkdtemp(prefix="wontfit-shots-"))
     (trigger_dir / "dist").mkdir()
     trigger = trigger_dir / "dist" / "app.css"  # watched as the relative glob dist/** for a tidy footer
     trigger.write_text("1")
@@ -93,7 +93,7 @@ def main() -> int:
     )
     proxy = subprocess.Popen(
         [
-            sys.executable, "-m", "phoneframes", "--no-config",
+            sys.executable, "-m", "wontfit", "--no-config",
             "--upstream", f"http://localhost:{SHOWCASE_PORT}", "--port", str(PROXY_PORT),
             "--pages", PAGES, "--widths", WIDTHS, "--height", str(FRAME_H),
             "--watch-file", "dist/**", "--watch-interval", "1",
@@ -156,7 +156,11 @@ def main() -> int:
             h1.hover()
             page.wait_for_timeout(400)
             boxes = [page.locator(".frame").nth(i).bounding_box() for i in range(3)]
-            shot("inspect", clip=union_box(boxes))
+            clip = union_box(boxes)
+            # Reach down to the footer: it shows the hovered element's selector.
+            foot = page.locator(".foot").bounding_box()
+            clip["height"] = foot["y"] + foot["height"] - clip["y"]
+            shot("inspect", clip=clip)
 
             # 6. landscape: the dashboard header covering the KPI cards.
             page.goto(harness_url("p=/dashboard&w=375,393&h=640&o=l"))
@@ -181,11 +185,11 @@ def main() -> int:
 
             browser.close()
 
-        # 8. contact sheet: what `phoneframes shoot` writes, straight from the subcommand.
+        # 8. contact sheet: what `wontfit shoot` writes, straight from the subcommand.
         shots_dir = trigger_dir / "shots"
         subprocess.run(
             [
-                sys.executable, "-m", "phoneframes", "shoot", "--no-config",
+                sys.executable, "-m", "wontfit", "shoot", "--no-config",
                 "--upstream", f"http://localhost:{SHOWCASE_PORT}",
                 "--pages", "/,/dashboard", "--widths", WIDTHS, "--height", "720", "--out", str(shots_dir),
             ],

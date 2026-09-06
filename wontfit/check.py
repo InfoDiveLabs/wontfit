@@ -1,6 +1,6 @@
-"""``phoneframes check``: run the frame diagnostics headlessly and fail the build on demand.
+"""``wontfit check``: run the frame diagnostics headlessly and fail the build on demand.
 
-The browser-driving part needs Playwright (optional, see :mod:`phoneframes._browser`).
+The browser-driving part needs Playwright (optional, see :mod:`wontfit._browser`).
 Everything that shapes results, decides the exit code and formats the table is
 pure and unit-tested.
 """
@@ -22,7 +22,7 @@ from . import CHECK_KINDS, __version__
 # Runs inside the page after diagnostics.js; returns only JSON-safe data.
 _COLLECT_JS = """
 () => {
-  const r = window.PhoneframesDiagnostics.analyze(document);
+  const r = window.WontfitDiagnostics.analyze(document);
   return {
     overflow: r.overflow ? { amount: r.overflow.amount, culprits: r.overflow.culprits } : null,
     tapTargets: r.tapTargets.map(t => ({ label: t.label, width: t.width, height: t.height })),
@@ -103,7 +103,7 @@ def exit_code(results: Sequence[FrameResult], fail_on: Sequence[str]) -> int:
 def build_report(upstream: str, results: Sequence[FrameResult], fail_on: Sequence[str]) -> dict[str, Any]:
     """The JSON document ``--json`` writes."""
     return {
-        "tool": "phoneframes",
+        "tool": "wontfit",
         "version": __version__,
         "upstream": upstream,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -135,7 +135,7 @@ def format_table(results: Sequence[FrameResult]) -> str:
 
 
 def diagnostics_source() -> str:
-    return resources.files("phoneframes").joinpath("assets", "diagnostics.js").read_text(encoding="utf-8")
+    return resources.files("wontfit").joinpath("assets", "diagnostics.js").read_text(encoding="utf-8")
 
 
 def run_check(ns: argparse.Namespace) -> int:
@@ -171,7 +171,7 @@ def run_check(ns: argparse.Namespace) -> int:
                         context.close()
             browser.close()
     except playwright_error as exc:
-        sys.stderr.write(f"phoneframes check: {explain_error(exc)}\n")
+        sys.stderr.write(f"wontfit check: {explain_error(exc)}\n")
         return 1
 
     print(format_table(results))

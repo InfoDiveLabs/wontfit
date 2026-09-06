@@ -1,6 +1,6 @@
-"""``phoneframes shoot``: a PNG per page x width plus a tiled contact sheet.
+"""``wontfit shoot``: a PNG per page x width plus a tiled contact sheet.
 
-Needs Playwright (optional, see :mod:`phoneframes._browser`). Screenshots go
+Needs Playwright (optional, see :mod:`wontfit._browser`). Screenshots go
 straight to the upstream; a headless browser is not bothered by
 ``X-Frame-Options``. The contact sheet is rendered by the same browser from a
 generated HTML page, so no image library is required.
@@ -59,7 +59,7 @@ def contact_sheet_html(entries: list[tuple[str, int, int, bytes]], columns: int,
             f"<figcaption><b>{html.escape(page)}</b> {width}x{height}</figcaption></figure>"
         )
     return (
-        "<!doctype html><meta charset=utf-8><title>phoneframes contact sheet</title>"
+        "<!doctype html><meta charset=utf-8><title>wontfit contact sheet</title>"
         "<style>"
         f"body{{margin:0;padding:{SHEET_PAD}px;background:#15171c;color:#d9dce3;"
         "font:13px system-ui,sans-serif}"
@@ -112,12 +112,12 @@ def shoot(ns: argparse.Namespace) -> int:
                     viewport={"width": sheet_w, "height": 800}, device_scale_factor=1
                 )
                 page = context.new_page()
-                page.set_content(contact_sheet_html(entries, columns, f"{ns.upstream}  ·  phoneframes"))
+                page.set_content(contact_sheet_html(entries, columns, f"{ns.upstream}  ·  wontfit"))
                 page.screenshot(path=str(out / SHEET_NAME), full_page=True)
                 context.close()
                 print(f"wrote {out / SHEET_NAME}")
             browser.close()
     except playwright_error as exc:
-        sys.stderr.write(f"phoneframes shoot: {explain_error(exc)}\n")
+        sys.stderr.write(f"wontfit shoot: {explain_error(exc)}\n")
         return 1
     return 0

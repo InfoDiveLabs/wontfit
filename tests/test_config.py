@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from phoneframes.cli import parse_args
-from phoneframes.config import (
+from wontfit.cli import parse_args
+from wontfit.config import (
     STARTER,
     ConfigError,
     extract_section,
@@ -54,8 +54,8 @@ class SubsetParserTests(unittest.TestCase):
         self.assertEqual(data["headers"], {"X-Dev": "1"})
 
     def test_dotted_sections_nest(self):
-        data = parse_toml_subset("[tool.phoneframes]\nport = 1\n[tool.phoneframes.cookies]\na = 'b'\n")
-        self.assertEqual(data, {"tool": {"phoneframes": {"port": 1, "cookies": {"a": "b"}}}})
+        data = parse_toml_subset("[tool.wontfit]\nport = 1\n[tool.wontfit.cookies]\na = 'b'\n")
+        self.assertEqual(data, {"tool": {"wontfit": {"port": 1, "cookies": {"a": "b"}}}})
 
     def test_errors_are_config_errors(self):
         with self.assertRaises(ConfigError):
@@ -81,8 +81,8 @@ class SubsetParserTests(unittest.TestCase):
         to_cli_defaults(data)  # every starter key must be a known, valid key
 
     def test_extract_section(self):
-        text = "[build-system]\nrequires = ['x']\n[tool.phoneframes]\nport = 5\n[tool.other]\nport = 6\n"
-        self.assertEqual(extract_section(text, "tool.phoneframes").strip(), "port = 5")
+        text = "[build-system]\nrequires = ['x']\n[tool.wontfit]\nport = 5\n[tool.other]\nport = 6\n"
+        self.assertEqual(extract_section(text, "tool.wontfit").strip(), "port = 5")
         self.assertEqual(extract_section(text, "tool.missing"), "")
 
 
@@ -126,12 +126,12 @@ class DiscoveryTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_walks_upward_and_prefers_phoneframes_toml(self):
-        (self.root / "pyproject.toml").write_text("[tool.phoneframes]\nport = 7000\n")
+    def test_walks_upward_and_prefers_wontfit_toml(self):
+        (self.root / "pyproject.toml").write_text("[tool.wontfit]\nport = 7000\n")
         found = find_config(self.nested)
         self.assertEqual(found[0], self.root / "pyproject.toml")
         self.assertEqual(found[1], {"port": 7000})
-        (self.root / "phoneframes.toml").write_text("port = 7001\n")
+        (self.root / "wontfit.toml").write_text("port = 7001\n")
         self.assertEqual(find_config(self.nested)[1], {"port": 7001})
 
     def test_pyproject_without_section_is_skipped(self):
@@ -142,22 +142,22 @@ class DiscoveryTests(unittest.TestCase):
         text = (
             '[project]\nname = "x"\ndescription = """multi\nline"""\n'
             '[[project.authors]]\nname = "a"\n'
-            '[tool.phoneframes]\npages = ["/x"]\n'
+            '[tool.wontfit]\npages = ["/x"]\n'
         )
         (self.root / "pyproject.toml").write_text(text)
         self.assertEqual(read_config_file(self.root / "pyproject.toml"), {"pages": ["/x"]})
 
     def test_bad_file_reports_path(self):
-        (self.root / "phoneframes.toml").write_text("port = \n")
+        (self.root / "wontfit.toml").write_text("port = \n")
         with self.assertRaises(ConfigError) as ctx:
             find_config(self.nested)
-        self.assertIn("phoneframes.toml", str(ctx.exception))
+        self.assertIn("wontfit.toml", str(ctx.exception))
 
     def test_no_config_found(self):
         self.assertIsNone(find_config(self.nested))
 
     def test_write_starter_refuses_overwrite(self):
-        target = self.root / "phoneframes.toml"
+        target = self.root / "wontfit.toml"
         write_starter(target, "http://localhost:4000")
         self.assertIn('upstream = "http://localhost:4000"', target.read_text())
         with self.assertRaises(FileExistsError):
@@ -168,7 +168,7 @@ class CliMergeTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name).resolve()  # macOS: /var -> /private/var
-        (self.root / "phoneframes.toml").write_text(
+        (self.root / "wontfit.toml").write_text(
             'upstream = "http://localhost:5173"\nport = 9000\npages = ["/", "/a"]\nwidths = [375]\n'
             'watch_files = ["src/**"]\nfail_on = ["overflow", "taps"]\nout = "pics"\n[cookies]\nsid = "1"\n'
         )
@@ -178,7 +178,7 @@ class CliMergeTests(unittest.TestCase):
 
     def test_config_supplies_defaults(self):
         ns = parse_args([], config_dir=self.root)
-        self.assertEqual(ns.config_path, self.root / "phoneframes.toml")
+        self.assertEqual(ns.config_path, self.root / "wontfit.toml")
         self.assertEqual(ns.upstream, "http://localhost:5173")
         self.assertEqual(ns.port, 9000)
         self.assertEqual(ns.pages, ["/", "/a"])

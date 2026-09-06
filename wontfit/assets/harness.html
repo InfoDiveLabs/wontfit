@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>phoneframes</title>
+<title>wontfit</title>
 <style>
   :root {
     color-scheme: dark;
@@ -85,7 +85,7 @@
 </head>
 <body>
 <form class="bar" id="bar" autocomplete="off">
-  <span class="brand">phoneframes<small id="version"></small></span>
+  <span class="brand">wontfit<small id="version"></small></span>
   <label class="field">pages <input type="text" name="pages" placeholder="/,/about" spellcheck="false"></label>
   <label class="field">widths <input type="text" name="widths" placeholder="375,393,430" spellcheck="false"></label>
   <span class="chips" id="presets" title="Toggle a device width"></span>
@@ -108,13 +108,13 @@
 </div>
 
 <script>
-/*__PHONEFRAMES_DIAGNOSTICS__*/
+/*__WONTFIT_DIAGNOSTICS__*/
 </script>
 <script>
 (function () {
   "use strict";
-  var CONFIG = /*__PHONEFRAMES_CONFIG__*/null;
-  var D = window.PhoneframesDiagnostics;
+  var CONFIG = /*__WONTFIT_CONFIG__*/null;
+  var D = window.WontfitDiagnostics;
   var bar = document.getElementById("bar");
   var framesEl = document.getElementById("frames");
   var presetsEl = document.getElementById("presets");
@@ -125,7 +125,7 @@
   var presetByWidth = {};
   CONFIG.presets.forEach(function (p) { presetByWidth[p.width] = presetByWidth[p.width] || p.name; });
 
-  /* ---- state <-> URL (mirrors phoneframes.harness.HarnessState) ------------ */
+  /* ---- state <-> URL (mirrors wontfit.harness.HarnessState) ------------ */
 
   function readState() {
     var q = new URLSearchParams(location.search);
@@ -392,7 +392,7 @@
         (st.changed_at ? " · changed " + fmtTime(st.changed_at) : "") + (reloads ? " · " + reloads + " reload" + (reloads === 1 ? "" : "s") : "");
     }).catch(function () {
       watchDot.className = "dot bad";
-      watchOut.textContent = "phoneframes proxy unreachable";
+      watchOut.textContent = "wontfit proxy unreachable";
     });
   }
   function startPolling() {

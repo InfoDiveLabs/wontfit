@@ -13,7 +13,7 @@ from typing import Any
 
 INSTALL_HINT = (
     "This command needs Playwright, which is optional:\n"
-    "    pip install 'phoneframes[shoot]'   # or: pip install playwright\n"
+    "    pip install 'wontfit[shoot]'   # or: pip install playwright\n"
     "    playwright install chromium\n"
 )
 

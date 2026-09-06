@@ -2,15 +2,15 @@
 #
 # It is a pre-push hook, not pre-commit, because it needs your dev server running;
 # a hook that fails whenever the app is down would be turned off within a week.
-# Merge into your .pre-commit-config.yaml. Flags can live in phoneframes.toml instead.
+# Merge into your .pre-commit-config.yaml. Flags can live in wontfit.toml instead.
 
 repos:
   - repo: local
     hooks:
-      - id: phoneframes-check
-        name: phoneframes check (phone-width overflow)
-        entry: phoneframes check --pages /,/pricing --widths se,iphone15 --fail-on overflow
+      - id: wontfit-check
+        name: wontfit check (phone-width overflow)
+        entry: wontfit check --pages /,/pricing --widths se,iphone15 --fail-on overflow
         language: system
         pass_filenames: false
         stages: [pre-push]
-        # Needs `pip install 'phoneframes[shoot]' && playwright install chromium` on the machine.
+        # Needs `pip install 'wontfit[shoot]' && playwright install chromium` on the machine.

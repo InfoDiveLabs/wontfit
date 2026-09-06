@@ -20,12 +20,12 @@ fmt:
 
 ## Run the proxy against $(UPSTREAM) and open the harness
 run:
-	$(PY) -m phoneframes --upstream $(UPSTREAM) --open
+	$(PY) -m wontfit --upstream $(UPSTREAM) --open
 
-## Try phoneframes in 30 seconds: the Ledgerly showcase site (blocks framing, has planted bugs)
+## Try wontfit in 30 seconds: the Ledgerly showcase site (blocks framing, has planted bugs)
 showcase:
 	$(PY) examples/showcase/server.py --port $(SHOWCASE_PORT) & echo $$! > .showcase.pid; \
-	sleep 0.5; $(PY) -m phoneframes --no-config --upstream http://localhost:$(SHOWCASE_PORT) \
+	sleep 0.5; $(PY) -m wontfit --no-config --upstream http://localhost:$(SHOWCASE_PORT) \
 	  --pages /,/pricing,/dashboard,/terms --widths se,iphone15,pixel8 --open; \
 	kill `cat .showcase.pid`; rm -f .showcase.pid
 
@@ -33,10 +33,10 @@ showcase:
 screenshots:
 	$(PY) docs/screenshots.py
 
-## Start a throwaway upstream that blocks framing, then phoneframes against it
+## Start a throwaway upstream that blocks framing, then wontfit against it
 demo:
 	$(PY) tests/demo_upstream.py --port 3999 & echo $$! > .demo.pid; \
-	sleep 0.5; $(PY) -m phoneframes --upstream http://localhost:3999 --pages /,/wide --open; \
+	sleep 0.5; $(PY) -m wontfit --upstream http://localhost:3999 --pages /,/wide --open; \
 	kill `cat .demo.pid`; rm -f .demo.pid
 
 ## Build sdist and wheel

@@ -2,10 +2,10 @@
 """Ledgerly: a fake product site plus app dashboard that refuses to be framed.
 
     python3 examples/showcase/server.py            # http://localhost:3939
-    phoneframes --upstream http://localhost:3939 --pages /,/pricing,/dashboard,/terms --open
+    wontfit --upstream http://localhost:3939 --pages /,/pricing,/dashboard,/terms --open
 
 Every response carries ``X-Frame-Options: DENY`` and a CSP with
-``frame-ancestors 'none'``, so a plain iframe of it is blank and phoneframes'
+``frame-ancestors 'none'``, so a plain iframe of it is blank and the wontfit
 proxy is doing visible work. The pages are decent responsive HTML with six
 mobile bugs planted on purpose (see README.md in this directory).
 
@@ -65,7 +65,7 @@ class Ledgerly(http.server.BaseHTTPRequestHandler):
         path = url.path
         host = self.headers.get("Host", "localhost")
         if path == "/login":
-            # Absolute Location on purpose: phoneframes must rewrite it back to the proxy.
+            # Absolute Location on purpose: wontfit must rewrite it back to the proxy.
             self._send(
                 302,
                 b"",

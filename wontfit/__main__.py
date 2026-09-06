@@ -1,4 +1,4 @@
-"""Allow ``python3 -m phoneframes``."""
+"""Allow ``python3 -m wontfit``."""
 
 from .cli import main
 

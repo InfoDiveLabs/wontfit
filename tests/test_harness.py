@@ -4,10 +4,10 @@ import http.client
 import json
 import unittest
 
-from phoneframes import HARNESS_PATH
-from phoneframes.harness import HarnessState, harness_config, make_route, render_harness
-from phoneframes.proxy import ProxyConfig, ProxyServer
-from phoneframes.watch import NullDetector, Watcher
+from wontfit import HARNESS_PATH
+from wontfit.harness import HarnessState, harness_config, make_route, render_harness
+from wontfit.proxy import ProxyConfig, ProxyServer
+from wontfit.watch import NullDetector, Watcher
 
 
 class HarnessStateTests(unittest.TestCase):
@@ -37,7 +37,7 @@ class HarnessStateTests(unittest.TestCase):
     def test_url_and_frames(self):
         state = HarnessState(pages=["/"], widths=[375, 430], height=800, landscape=True)
         self.assertEqual(
-            state.url("http://127.0.0.1:8081/"), "http://127.0.0.1:8081/__phoneframes?p=/&w=375,430&h=800&o=l"
+            state.url("http://127.0.0.1:8081/"), "http://127.0.0.1:8081/__wontfit?p=/&w=375,430&h=800&o=l"
         )
         self.assertEqual(
             state.frames(),
@@ -51,8 +51,8 @@ class HarnessStateTests(unittest.TestCase):
 class RenderTests(unittest.TestCase):
     def test_render_inlines_config_and_diagnostics(self):
         html = render_harness(HarnessState(pages=["/a"], widths=[393]), 2.5, "watching /a")
-        self.assertIn("PhoneframesDiagnostics", html)
-        self.assertNotIn("/*__PHONEFRAMES_", html)
+        self.assertIn("WontfitDiagnostics", html)
+        self.assertNotIn("/*__WONTFIT_", html)
         start = html.index("var CONFIG = ") + len("var CONFIG = ")
         end = html.index(";", start)
         config = json.loads(html[start:end])
@@ -93,7 +93,7 @@ class RouteTests(unittest.TestCase):
         resp, body = self.get(HARNESS_PATH + "?p=/&w=375")
         self.assertEqual(resp.status, 200)
         self.assertIn("text/html", resp.getheader("Content-Type"))
-        self.assertIn(b"<title>phoneframes</title>", body)
+        self.assertIn(b"<title>wontfit</title>", body)
 
     def test_watch_endpoint(self):
         resp, body = self.get(HARNESS_PATH + "/watch")
@@ -105,7 +105,7 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(resp.status, 404)
 
     def test_other_paths_go_to_upstream(self):
-        resp, body = self.get("/__phoneframesish")
+        resp, body = self.get("/__wontfitish")
         self.assertEqual(resp.status, 502)
         self.assertIn(b"unreachable", body)
 

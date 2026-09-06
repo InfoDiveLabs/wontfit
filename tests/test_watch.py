@@ -4,8 +4,8 @@ import os
 import tempfile
 import unittest
 
-from phoneframes.proxy import ProxyConfig
-from phoneframes.watch import (
+from wontfit.proxy import ProxyConfig
+from wontfit.watch import (
     CompositeDetector,
     FileDetector,
     NullDetector,

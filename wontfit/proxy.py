@@ -285,17 +285,17 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
     """One request in, one upstream request out. Harness paths are served locally."""
 
     protocol_version = "HTTP/1.1"
-    server_version = f"phoneframes/{__version__}"
+    server_version = f"wontfit/{__version__}"
     sys_version = ""
     config: ProxyConfig = ProxyConfig()
-    #: Called for ``/__phoneframes*`` paths. Returns True when it handled the request.
+    #: Called for ``/__wontfit*`` paths. Returns True when it handled the request.
     harness_route: HarnessRoute | None = None
 
     # -- plumbing -----------------------------------------------------------------
 
     def log_message(self, fmt: str, *args) -> None:  # noqa: D401 - BaseHTTPRequestHandler API
         if self.config.verbose:
-            sys.stderr.write("phoneframes: %s\n" % (fmt % args))
+            sys.stderr.write("wontfit: %s\n" % (fmt % args))
 
     def send_text(self, status: int, text: str, content_type: str = "text/plain; charset=utf-8") -> None:
         body = text.encode("utf-8")
@@ -317,7 +317,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         if path_only == HARNESS_PATH or path_only.startswith(HARNESS_PATH + "/"):
             if self.harness_route and self.harness_route(self, path_only):
                 return
-            self.send_text(404, "phoneframes: no such harness route")
+            self.send_text(404, "wontfit: no such harness route")
             return
         self._proxy()
 
@@ -333,7 +333,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
     def _proxy(self) -> None:
         if (self.headers.get("Upgrade") or "").lower() == "websocket":
-            self.send_text(501, "phoneframes does not proxy WebSockets; talk to the upstream directly.")
+            self.send_text(501, "wontfit does not proxy WebSockets; talk to the upstream directly.")
             return
         body = self._read_request_body()
         headers = build_upstream_headers(self.config, self.headers.items())
@@ -350,12 +350,12 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         except ssl.SSLCertVerificationError as exc:
             self.send_text(
                 502,
-                f"phoneframes: TLS verification failed for {self.config.upstream}: {exc}\n"
+                f"wontfit: TLS verification failed for {self.config.upstream}: {exc}\n"
                 "Pass --insecure to accept a self-signed certificate.",
             )
             return
         except (OSError, http.client.HTTPException) as exc:
-            self.send_text(502, f"phoneframes: upstream {self.config.upstream} unreachable: {exc}")
+            self.send_text(502, f"wontfit: upstream {self.config.upstream} unreachable: {exc}")
             return
 
         try:
@@ -421,7 +421,7 @@ class ProxyServer(http.server.ThreadingHTTPServer):
 
     def serve_in_thread(self) -> threading.Thread:
         """Start serving on a daemon thread (used by tests and by ``shoot``)."""
-        thread = threading.Thread(target=self.serve_forever, name="phoneframes-proxy", daemon=True)
+        thread = threading.Thread(target=self.serve_forever, name="wontfit-proxy", daemon=True)
         thread.start()
         return thread
 

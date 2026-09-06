@@ -1,7 +1,8 @@
-.PHONY: test lint fmt run demo build clean
+.PHONY: test lint fmt run showcase demo screenshots build clean
 
 PY ?= python3
 UPSTREAM ?= http://localhost:3000
+SHOWCASE_PORT ?= 3939
 
 ## Run the unit tests (standard library unittest, no extras needed)
 test:
@@ -20,6 +21,17 @@ fmt:
 ## Run the proxy against $(UPSTREAM) and open the harness
 run:
 	$(PY) -m phoneframes --upstream $(UPSTREAM) --open
+
+## Try phoneframes in 30 seconds: the Ledgerly showcase site (blocks framing, has planted bugs)
+showcase:
+	$(PY) examples/showcase/server.py --port $(SHOWCASE_PORT) & echo $$! > .showcase.pid; \
+	sleep 0.5; $(PY) -m phoneframes --no-config --upstream http://localhost:$(SHOWCASE_PORT) \
+	  --pages /,/pricing,/dashboard,/terms --widths se,iphone15,pixel8 --open; \
+	kill `cat .showcase.pid`; rm -f .showcase.pid
+
+## Regenerate docs/images (needs a venv with playwright + pillow: see docs/screenshots.py)
+screenshots:
+	$(PY) docs/screenshots.py
 
 ## Start a throwaway upstream that blocks framing, then phoneframes against it
 demo:

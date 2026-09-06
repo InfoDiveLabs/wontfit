@@ -65,13 +65,20 @@
     var sw = Math.max(root.scrollWidth, doc.body ? doc.body.scrollWidth : 0);
     if (sw <= vw + 1) return null;
     var culprits = [];
+    var found = [];  // outermost offenders only: a wide <td> inside a wide <table> is noise
     var all = doc.body.querySelectorAll("*");
     for (var i = 0; i < all.length && culprits.length < MAX_CULPRITS; i++) {
       var el = all[i];
       if (SKIP_TAGS[el.tagName] || isOurs(el)) continue;
+      var inside = false;
+      for (var j = 0; j < found.length; j++) {
+        if (found[j].contains(el)) { inside = true; break; }
+      }
+      if (inside) continue;
       var r = el.getBoundingClientRect();
       if (!r.width) continue;
       if (r.right > vw + 1 || r.left < -1) {
+        found.push(el);
         culprits.push({ label: label(el), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width) });
       }
     }

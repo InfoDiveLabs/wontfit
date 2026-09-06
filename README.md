@@ -19,12 +19,18 @@ when your browser window is fullscreen.
 
 ## Install
 
-Not on PyPI yet. Until it is, install from git or a checkout:
+Not on PyPI yet, and the repository is private, so install from a clone:
 
 ```sh
-pipx install git+https://github.com/Suraj-Tiwari/wontfit   # or: uvx --from git+https://github.com/Suraj-Tiwari/wontfit wontfit
-pipx install .                                             # from a clone
-python3 -m wontfit                                         # no install at all, from a clone
+git clone https://github.com/Suraj-Tiwari/wontfit && cd wontfit
+pipx install .            # or: pip install .
+python3 -m wontfit        # or run it with no install at all
+```
+
+With access to the repository you can also install straight from git:
+
+```sh
+pipx install git+https://github.com/Suraj-Tiwari/wontfit
 ```
 
 Once published: `pipx install wontfit` / `uvx wontfit`.

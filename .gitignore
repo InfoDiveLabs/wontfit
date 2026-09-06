@@ -9,3 +9,6 @@ venv/
 .pytest_cache/
 shots/
 .DS_Store
+.venv-shots/
+*.pid
+phoneframes-report.json

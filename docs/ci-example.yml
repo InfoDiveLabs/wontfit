@@ -1,0 +1,63 @@
+# Example GitHub Actions job: fail the build on horizontal overflow at phone widths,
+# and keep screenshots of every page x width as a downloadable artifact.
+#
+# Copy to .github/workflows/mobile-check.yml and replace the two "your app" steps.
+# The phoneframes flags can move into a committed phoneframes.toml.
+
+name: mobile-check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  phoneframes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # --- your app -------------------------------------------------------------
+      - name: Install app dependencies
+        run: npm ci                                   # or: pip install -r requirements.txt
+
+      - name: Start the app in the background
+        run: |
+          npm run dev -- --port 3000 > app.log 2>&1 &  # or: python manage.py runserver 3000 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/ > /dev/null && break
+            sleep 1
+          done
+          curl -sf http://localhost:3000/ > /dev/null || { cat app.log; exit 1; }
+
+      # --- phoneframes --------------------------------------------------------------
+      - name: Install phoneframes with the Playwright extra
+        run: |
+          python -m pip install --quiet 'phoneframes[shoot]'   # or: 'git+https://github.com/<org>/phoneframes#egg=phoneframes[shoot]'
+          python -m playwright install --with-deps chromium
+
+      - name: Check phone layouts (fails on overflow)
+        run: |
+          phoneframes check --upstream http://localhost:3000 \
+            --pages /,/pricing,/dashboard --widths se,iphone15,pixel8 \
+            --fail-on overflow --json phoneframes-report.json
+
+      - name: Screenshots (always, even when the check failed)
+        if: always()
+        run: |
+          phoneframes shoot --upstream http://localhost:3000 \
+            --pages /,/pricing,/dashboard --widths se,iphone15,pixel8 --out shots
+
+      - name: Upload report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phoneframes
+          path: |
+            phoneframes-report.json
+            shots/
+          retention-days: 14

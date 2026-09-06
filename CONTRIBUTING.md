@@ -35,8 +35,13 @@ python3 -m phoneframes --upstream http://localhost:3999 --pages /,/wide --open
 | `phoneframes/assets/harness.html` | The page: controls, frames, live reload polling |
 | `phoneframes/assets/diagnostics.js` | Overflow / tap target / small text / inspect, run against same-origin frames |
 | `phoneframes/watch.py` | Change detectors and the rate-limited `Watcher` |
-| `phoneframes/shoot.py` | Optional Playwright screenshots |
-| `phoneframes/cli.py` | Argument parsing and the two commands |
+| `phoneframes/config.py` | `phoneframes.toml` / `[tool.phoneframes]` discovery, the TOML-subset parser, CLI-default merging |
+| `phoneframes/check.py` | `check`: report shaping, exit codes, table (pure) and the Playwright runner |
+| `phoneframes/shoot.py` | `shoot`: per-frame PNGs and the contact sheet |
+| `phoneframes/_browser.py` | Shared guarded Playwright import and context setup |
+| `phoneframes/cli.py` | Argument parsing, config merging, and the `serve` / `shoot` / `check` / `init` commands |
+| `examples/showcase/` | The Ledgerly demo site with planted bugs (`make showcase`) |
+| `docs/screenshots.py` | Regenerates `docs/images` (maintainers; needs Playwright and Pillow) |
 
 ## Pull requests
 

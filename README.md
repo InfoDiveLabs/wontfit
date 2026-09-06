@@ -1,71 +1,145 @@
 # phoneframes
 
-Preview any locally running web app at phone and tablet sizes, side by side, in
-your normal desktop browser. Works even when the app sends `X-Frame-Options` or
-a CSP `frame-ancestors` directive, and even when your browser window is
-fullscreen.
+Preview any locally running web app at phone and tablet sizes, side by side,
+in your normal desktop browser. Even when the app sends `X-Frame-Options` or a
+CSP `frame-ancestors` directive. Even when your browser window is fullscreen.
 
-Zero dependencies. Python 3.9+ standard library only. Binds to loopback.
+![phoneframes showing a landing page at iPhone SE, iPhone 15 and Pixel 8 widths, each flagged for horizontal overflow](docs/images/hero.png)
 
-## Quick start (10 seconds)
+- **Zero dependencies.** Python 3.9+ standard library only. Binds to loopback.
+- **Diagnostics, not just frames.** Overflow with the culprit element, tap targets
+  under 44px, text under 12px, cross-frame inspect, live reload.
+- **Runs in CI.** `phoneframes check` fails the build on overflow; `phoneframes shoot`
+  writes PNGs and a contact sheet.
+
+## Install
+
+Not on PyPI yet. Until it is, install from git or a checkout:
 
 ```sh
-pipx install phoneframes            # or: pip install phoneframes
-phoneframes --upstream http://localhost:3000 --open
+pipx install git+https://github.com/infodive/phoneframes      # or: uvx --from git+https://github.com/infodive/phoneframes phoneframes
+pipx install .                                                # from a clone
+python3 -m phoneframes                                        # no install at all, from a clone
 ```
 
-That opens `http://127.0.0.1:8081/__phoneframes` with your app's `/` rendered
-at 375, 393 and 430 CSS px. Type more pages and widths in the bar, or deep-link:
+Once published: `pipx install phoneframes` / `uvx phoneframes`.
 
+## Try it in 30 seconds
+
+No app of your own running? The repo ships a fake product site that refuses
+to be framed and has six planted mobile bugs:
+
+```sh
+git clone https://github.com/infodive/phoneframes && cd phoneframes
+make showcase        # starts examples/showcase on :3939 and opens the harness
 ```
-/__phoneframes?p=/,/pricing&w=375,se,ipad&h=900
-/__phoneframes?p=/dashboard&w=393&o=l          # landscape
+
+With your own app:
+
+```sh
+phoneframes --upstream http://localhost:3000 --pages /,/pricing --open
 ```
 
-No install needed either: `git clone` and `python3 -m phoneframes ...`.
+## See it
 
-## What it looks like
+| | |
+|---|---|
+| ![Three pages at three phone widths](docs/images/harness.png) | **The harness.** One column per page x width; each frame carries its own verdict. Layout state lives in the URL, so this is a shareable link. |
+| ![A frame flagged red with its overflow culprit](docs/images/overflow.png) | **Overflow, named.** The pricing table is 583px too wide; the culprit list says `table.compare` and its bounds. |
+| ![Dashed outlines around small buttons](docs/images/tap-targets.png) | **Tap targets.** Press `t` to outline every interactive element under 44x44 CSS px inside the frame. |
+| ![The same heading highlighted in three frames](docs/images/inspect.png) | **Inspect across frames.** Press `i`, hover an element in one frame, and it is highlighted with its size in every frame; the footer shows the selector. |
+| ![Two landscape frames with a header covering content](docs/images/landscape.png) | **Landscape.** Swaps width and height. Here the app's fixed header grows to two rows and covers the KPI cards. |
+| ![Footer reading watching dist/** changed 12:58:08 1 reload](docs/images/live-reload.png) | **Live reload.** Hash a URL or watch files; the footer shows what is watched, the fingerprint and the last change. |
+| ![Six screenshots tiled on a dark sheet](docs/images/contact-sheet.png) | **`phoneframes shoot`.** A PNG per page x width plus this contact sheet, ready for a pull request. |
 
-<!-- screenshot placeholder: docs/phoneframes.png (harness with three frames, one flagged red for overflow) -->
-> Screenshot/GIF coming. Run `python3 tests/demo_upstream.py` then
-> `phoneframes --upstream http://localhost:3999 --pages /,/wide --open` to see it live.
+## Why not DevTools device mode, Responsively or Polypane?
 
-## Why not DevTools device mode?
+**DevTools device mode** shows one page at one size in the tab you are in. It
+is fine for a quick look and poor at the loop you are actually in while fixing
+a responsive layout: three pages at three widths, after every save, without
+picking a device from a dropdown per tab. It also cannot tell you *which*
+element is 40px too wide.
 
-Device mode is great for one page at one size. It is poor at the thing you do
-while iterating on a responsive layout: watching `/`, `/pricing` and `/checkout`
-at three phone widths *at the same time*, after every save, without clicking
-through a dropdown per tab. phoneframes puts them all on one screen, keeps the
-layout in a URL you can send to a teammate, reloads every frame when the app
-changes, and tells you which frame overflows and which element did it. And it
-does not care that your app forbids framing: the proxy removes exactly the two
-headers that say so, leaves the rest of the security policy in place, and only
-ever listens on `127.0.0.1`.
+**Responsively** and **Polypane** are dedicated browsers that solve the
+side-by-side problem well, with synced scrolling, device frames and much more.
+They are also 200-500 MB Electron apps (Polypane is paid), you use them instead
+of your usual browser and extensions, and they do not run in CI. phoneframes
+is a 2,000-line Python package with no dependencies that puts the frames in
+the browser you already have open, adds the four diagnostics a mobile layout
+review actually needs, and ships a `check` command so the same diagnostics
+gate a pull request. If you want synced scrolling, device bezels, or emulated
+touch, use one of those tools; if you want something you can `pipx install`
+and forget, this is it.
 
 ## Features
 
-- **Proxy** - forwards every method and body, streams responses, strips
-  `X-Frame-Options` and only the `frame-ancestors` part of the CSP, rewrites
-  absolute `Location` headers back to the proxy, forwards cookies both ways,
-  passes gzip/br/zstd through untouched, HTTPS upstreams with `--insecure` for
-  self-signed certs, and `--rewrite-host` for apps that check `Host`.
-- **Harness** - pages list, typed widths or device presets (iPhone SE 375,
-  iPhone 15 393, iPhone 15 Plus 430, Pixel 8 412, Galaxy Fold 344, iPad Mini
-  744, iPad 820, laptop 1280), height, landscape toggle, one column per page x
-  width, state in the URL, Reload frames (`r`).
-- **Diagnostics per frame** (best-effort, same-origin only)
-  - horizontal overflow: flagged red, with the offending elements by
-    tag/class and their left..right bounds
-  - tap targets smaller than 44x44 CSS px: warning count, plus an outline
-    overlay inside the frame (`t`)
-  - text under 12px: count
-  - inspect (`i`): hover an element in one frame and it is highlighted, with its
-    size, in every frame
-- **Live reload** - polls a URL and hashes the body (default: your first page,
-  every 2s), or watches local files by mtime with `--watch-file`, or both. The
-  footer shows what is watched, the current fingerprint and the last change.
-- **Screenshots** - `phoneframes shoot` writes PNGs with Playwright, if you have
-  it installed. The core never imports it.
+| | |
+|---|---|
+| **Proxy** | Forwards every method and body, streams responses, strips `X-Frame-Options` and only the `frame-ancestors` part of the CSP, rewrites absolute `Location` headers back to the proxy, forwards cookies both ways, passes gzip/br through untouched, HTTPS upstreams with `--insecure`, `--rewrite-host` for apps that check `Host`. |
+| **Harness** | Pages, typed widths or presets (iPhone SE 375, iPhone 15 393, iPhone 15 Plus 430, Pixel 8 412, Galaxy Fold 344, iPad Mini 744, iPad 820, laptop 1280), height, landscape, URL state, Reload frames (`r`). |
+| **Diagnostics** | Per frame, same-origin, best-effort: horizontal overflow with outermost culprits by tag/class and bounds; interactive elements under 44x44 CSS px with an overlay (`t`); text under 12px; inspect (`i`). Frames that navigate cross-origin are marked and skipped, never broken. |
+| **Live reload** | Pluggable detectors: URL body hash (`--watch-url`, default the first page, every `--watch-interval` seconds) and/or local file mtimes (`--watch-file GLOB`). |
+| **`check`** | Headless diagnostics via Playwright (optional): table, JSON report, exit 1 on `--fail-on overflow,taps,text`. |
+| **`shoot`** | PNG per page x width plus `contact-sheet.png`, via Playwright (optional). |
+| **Config** | `phoneframes.toml` or `[tool.phoneframes]` in `pyproject.toml`, found from the current directory upward. Flags override. `phoneframes init` writes a starter. |
+
+## Configuration
+
+```sh
+phoneframes init        # writes a commented phoneframes.toml; commit it
+phoneframes             # contributors need nothing else
+```
+
+```toml
+# phoneframes.toml
+upstream = "http://localhost:5173"
+pages = ["/", "/pricing", "/dashboard"]
+widths = ["se", "iphone15", "pixel8"]
+watch_files = ["src/**/*.css"]
+fail_on = ["overflow"]
+
+[cookies]
+session = "dev-session"
+```
+
+Keys: `upstream`, `port`, `pages`, `widths`, `height`, `cookies`, `headers`,
+`watch_url`, `watch_files`, `watch_interval`, `rewrite_host`, `insecure`,
+`out`, `fail_on`. The same table works under `[tool.phoneframes]` in
+`pyproject.toml`. `--no-config` ignores any file. On Python 3.9 and 3.10 a
+small built-in TOML parser reads the file (strings, numbers, booleans,
+arrays, tables); 3.11+ uses `tomllib`.
+
+## In CI
+
+```sh
+pip install 'phoneframes[shoot]' && playwright install --with-deps chromium
+phoneframes check --pages /,/pricing --widths se,iphone15,pixel8 --fail-on overflow --json report.json
+phoneframes shoot --pages /,/pricing --widths se,iphone15,pixel8 --out shots
+```
+
+```
+page      size     overflow                small taps  text<12px
+--------  -------  ----------------------  ----------  ---------
+/         375x800  +401px (img.shot)       9           1
+/pricing  375x800  +583px (table.compare)  3           1
+/terms    375x800  fits                    3           10
+
+FAIL (overflow):
+  / @ 375: overflow +401px (img.shot)
+  /pricing @ 375: overflow +583px (table.compare)
+```
+
+A complete GitHub Actions job that starts your app, runs `check`, and uploads
+the report and screenshots as artifacts is in
+[docs/ci-example.yml](docs/ci-example.yml); a pre-push hook is in
+[docs/pre-commit-example.yaml](docs/pre-commit-example.yaml).
+
+## Your stack
+
+[docs/recipes.md](docs/recipes.md) has copy-paste commands and the one gotcha
+per framework for Vite/React, Next.js, Nuxt, SvelteKit, Django, Flask/FastAPI,
+Rails, Go, Laravel, static sites, Storybook and Docker Compose, including how
+to keep HMR working (its WebSocket does not go through the proxy).
 
 ## Flags
 
@@ -82,127 +156,95 @@ ever listens on `127.0.0.1`.
 | `--cookie name=value` | | Sent with every upstream request. Repeatable. |
 | `--header 'Name: value'` | | Sent with every upstream request. Repeatable. |
 | `--insecure` | off | Accept self-signed certificates on an HTTPS upstream. |
-| `--rewrite-host HOST` | upstream's host | `Host` header sent upstream. `preserve` forwards the browser's (`127.0.0.1:8081`); any other value is sent literally. |
-| `--watch-url URL` | first page | Poll this URL through the upstream and reload frames when its body changes. |
-| `--watch-file GLOB` | | Watch local files by mtime and size instead of, or as well as, a URL. Repeatable, `**` allowed. |
+| `--rewrite-host HOST` | upstream's host | `Host` sent upstream. `preserve` forwards the browser's; any other value is sent literally. |
+| `--watch-url URL` | first page | Poll this URL and reload frames when its body changes. |
+| `--watch-file GLOB` | | Watch local files by mtime and size. Repeatable, `**` allowed. |
 | `--watch-interval S` | `2` | Seconds between checks. |
 | `--no-watch` | off | Disable live reload. |
-| `-v`, `--verbose` | off | Log each proxied request with status and timing. |
-| `--version` | | Print the version. |
+| `--no-config` | off | Ignore `phoneframes.toml` / `pyproject.toml`. |
+| `-v`, `--verbose` | off | Log each proxied request. |
 
-`phoneframes shoot [options]` takes the shared flags above (`--upstream`,
-`--pages`, `--widths`, `--height`, `--cookie`, `--header`, `--insecure`) plus:
+`phoneframes check` and `phoneframes shoot` take `--upstream --pages --widths
+--height --cookie --header --insecure --no-config --landscape --timeout
+--settle`, plus:
 
-| Flag | Default | What it does |
-|---|---|---|
-| `--out DIR` | `shots` | Where to write `<page>-<w>x<h>.png`. |
-| `--full-page` | off | Capture the whole scrollable page instead of the viewport. |
-| `--landscape` | off | Swap width and height. |
+| Command | Flag | Default | What it does |
+|---|---|---|---|
+| check | `--fail-on overflow,taps,text` | `overflow` | Which findings exit 1. `none` only reports. |
+| check | `--json PATH` | | Write the JSON report. |
+| shoot | `--out DIR` | `shots` | Where PNGs go. |
+| shoot | `--full-page` | off | Whole scrollable page, not just the viewport. |
+| shoot | `--no-sheet` | off | Skip `contact-sheet.png`. |
 
-Install the optional dependency with `pip install 'phoneframes[shoot]'` then
-`playwright install chromium`. Without it the command prints how to get it and
-exits 2.
+`phoneframes init [--upstream URL] [--path FILE] [--force]` writes the starter config.
 
-## Harness keyboard shortcuts
-
-Shortcuts apply when the harness itself has focus (click the dark background
-first if you were typing inside a frame).
-
-| Key | Action |
-|---|---|
-| `r` | Reload every frame |
-| `t` | Toggle the tap-target overlay |
-| `i` | Toggle inspect |
-| `Esc` | Leave a text field |
-
-## URL state
-
-Everything in the bar lives in the query string, so a layout is a link:
-`p` pages, `w` widths (numbers or preset keys), `h` height, `o=l` landscape,
-`live=0` live reload off. Missing or invalid values fall back to what the CLI
-was started with.
+Harness shortcuts (when the harness itself has focus): `r` reload, `t` tap
+overlay, `i` inspect, `Esc` leave a field. URL keys: `p` pages, `w` widths,
+`h` height, `o=l` landscape, `live=0`.
 
 ## FAQ
 
 **The app sets a CSP. Does phoneframes weaken it?**
 Only `frame-ancestors` is removed. `script-src`, `connect-src`, nonces and the
-rest are forwarded exactly as sent. `Content-Security-Policy-Report-Only` gets
-the same treatment. `X-Frame-Options` is dropped entirely because it has no
-other purpose.
+rest are forwarded as sent, for `Content-Security-Policy-Report-Only` too.
+`X-Frame-Options` is dropped because it has no other purpose.
 
-**Do cookies work? I need to be logged in.**
-Yes. The browser's cookies for `127.0.0.1:8081` are forwarded to the upstream,
-and upstream `Set-Cookie` headers come back with `Domain` and `Secure` removed
-so they stick to the proxy's plain-HTTP loopback origin (`SameSite=None`
-becomes `Lax`). Log in once inside any frame, or pass a session cookie on the
-command line: `--cookie session=abc123`. Bearer tokens go in
-`--header 'Authorization: Bearer ...'`.
+**Do cookies and logins work?**
+Yes. Browser cookies for `127.0.0.1:8081` are forwarded upstream; upstream
+`Set-Cookie` comes back with `Domain` and `Secure` removed so it sticks on the
+proxy's loopback origin (`SameSite=None` becomes `Lax`). Log in inside a
+frame, or pass `--cookie session=...` / `--header 'Authorization: Bearer ...'`.
 
 **HTTPS upstream?**
-`--upstream https://localhost:5173`. Certificates are verified by default;
-`--insecure` accepts self-signed ones. The proxy itself always speaks plain
-HTTP, which browsers treat as a secure context on loopback.
+`--upstream https://localhost:5173`, and `--insecure` for self-signed
+certificates. The proxy itself speaks plain HTTP on loopback, which browsers
+treat as a secure context.
 
-**The app redirects me to `http://localhost:3000/...` and I lose the proxy.**
-Absolute `Location` headers that point at the upstream origin are rewritten
-to the proxy. Redirects the app constructs client-side from a hard-coded host
-cannot be caught; use `--rewrite-host preserve` so the app builds URLs from the
-proxy's `Host` header instead.
+**The app redirects to `http://localhost:3000/...` and leaves the proxy.**
+Absolute `Location` headers to the upstream origin are rewritten. Client-side
+redirects built from a hard-coded host cannot be; use `--rewrite-host preserve`
+so the app builds URLs from the proxy's `Host`.
 
-**The app rejects requests because of the `Host` header (Django
-`ALLOWED_HOSTS`, Rails `hosts`, Vite `server.allowedHosts`).**
-By default phoneframes sends the upstream's own host, so those checks pass.
-`Origin` and `Referer` are rewritten to match, which keeps CSRF origin checks
-happy. If you want the app to see the proxy's host instead, pass
-`--rewrite-host preserve`.
+**Django `ALLOWED_HOSTS` / Rails `hosts` / Vite `allowedHosts` reject it.**
+They should not: the proxy sends the upstream's own host, and rewrites
+`Origin`/`Referer` to match so CSRF checks pass too.
 
 **A frame says "cross-origin".**
-The page inside navigated to another origin (an OAuth provider, a CDN error
-page). The frame still shows it, but diagnostics need same-origin access and
-are switched off for that frame until it comes back.
-
-**Why is my link flagged as a small tap target?**
-Anything interactive under 44x44 CSS px is counted, matching WCAG 2.5.5 and
-Apple's HIG. Inline text links usually trip it; that is a judgement call, which
-is why it is a warning count and not a red flag.
+The page inside navigated to another origin (an OAuth provider, say). It still
+displays; diagnostics need same-origin access and pause for that frame.
 
 **Live reload does not fire.**
-The default detector hashes the body of your first page; a CSS-only change
-that leaves the HTML byte-identical will not trigger it. Use
-`--watch-file 'src/**/*'` for file-based detection, or `--watch-url` for a
-URL that changes on every build (a manifest, a hashed asset URL).
+The default detector hashes your first page's HTML; a CSS-only change that
+leaves it byte-identical will not trigger. Use `--watch-file 'src/**'`.
 
-**Can I bind to 0.0.0.0 to test from a real phone?**
-No, on purpose. See below.
+**Why is a plain text link counted as a small tap target?**
+Anything interactive under 44x44 CSS px counts (WCAG 2.5.5, Apple HIG).
+Inline links usually trip it, which is why it is a count, not a red flag, and
+not in the default `--fail-on`.
 
 ## What it deliberately does not do
 
-- **WebSockets.** `Upgrade: websocket` requests get a 501. Frameworks whose HMR
-  client connects to a hard-coded port will still work if that port is the
-  upstream's; ones that connect to `location.host` will fail to connect and
-  fall back to polling or nothing. phoneframes' own live reload does not need
-  it.
-- **HTTP/2 or server push.** The proxy is HTTP/1.1 on both sides.
-- **Connection pooling.** One fresh upstream connection per request.
-- **Rewriting bodies.** HTML, JS and JSON are passed through byte-for-byte; no
-  URL rewriting happens inside content.
-- **Trailers**, and request bodies without `Content-Length` or chunked framing.
+- **WebSockets.** `Upgrade: websocket` gets a 501. See the recipes for keeping
+  your framework's HMR client pointed at the dev server.
+- **HTTP/2, server push, trailers, connection pooling.** HTTP/1.1, one fresh
+  upstream connection per request.
+- **Rewriting bodies.** HTML, JS and JSON pass through byte-for-byte.
+- **Binding to anything but `127.0.0.1`.**
 
 ## Security note
 
-phoneframes binds to `127.0.0.1` only and has no authentication, because it is
-a development tool that removes framing protection from whatever you point it
-at. Never expose the port on a network interface, through a tunnel, or from a
-container port mapping. If you need to preview on a real device, use the app's
-own dev server on your LAN, not this proxy.
+phoneframes strips framing protection from whatever you point it at and has
+no authentication, so it binds to `127.0.0.1` only. Never expose the port on a
+network interface, through a tunnel, or via a container port mapping. To
+preview on a real device, use your app's own dev server on the LAN.
 
 ## Development
 
 ```sh
-python3 -m unittest        # tests, stdlib only
-make lint                  # ruff, if installed
-python3 tests/demo_upstream.py            # throwaway app that blocks framing
-python3 -m phoneframes --upstream http://localhost:3999 --pages /,/wide --open
+python3 -m unittest                 # tests, stdlib only
+make lint                           # ruff, if installed
+make showcase                       # the Ledgerly demo site + harness
+PY=.venv-shots/bin/python make screenshots   # regenerate docs/images (needs playwright, pillow)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Licensed under [MIT](LICENSE).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md). MIT.

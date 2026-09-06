@@ -6,6 +6,25 @@ All notable changes to phoneframes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+- `phoneframes.toml` / `[tool.phoneframes]` in `pyproject.toml`, discovered from
+  the current directory upward; flags override. `phoneframes init` writes a
+  commented starter. `--no-config` ignores any file. A built-in TOML-subset
+  parser covers Python 3.9 and 3.10; 3.11+ uses `tomllib`.
+- `phoneframes check`: the same diagnostics headlessly via Playwright, a
+  terminal table, `--json` report, and `--fail-on overflow,taps,text` for CI.
+- `phoneframes shoot` now also writes `contact-sheet.png` (all frames tiled),
+  reads the config file, and accepts `--landscape`, `--timeout`, `--settle`.
+- `examples/showcase`: the Ledgerly demo site (marketing pages plus a dashboard)
+  that blocks framing and has six planted mobile bugs; `make showcase`.
+- Real screenshots in `docs/images` with `docs/screenshots.py` to regenerate them,
+  `docs/recipes.md` for twelve stacks, `docs/ci-example.yml` and a pre-push hook example.
+
+### Changed
+- Overflow diagnostics list only the outermost offending elements, so a wide
+  table no longer reports every `thead`, `tr` and `th` inside it.
+- Frame captions wrap within the frame width instead of widening the column.
+
 ## [0.1.0] - 2026-09-06
 
 ### Added

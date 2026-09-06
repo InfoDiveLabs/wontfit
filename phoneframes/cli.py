@@ -1,4 +1,13 @@
-"""Command line entry point: ``phoneframes`` (serve) and ``phoneframes shoot``."""
+"""Command line entry point.
+
+``phoneframes``        serve the proxy and harness (the default command)
+``phoneframes shoot``  PNG screenshots plus a contact sheet (needs Playwright)
+``phoneframes check``  headless diagnostics with a CI-friendly exit code (needs Playwright)
+``phoneframes init``   write a starter ``phoneframes.toml``
+
+A ``phoneframes.toml`` (or ``[tool.phoneframes]`` in ``pyproject.toml``) found in
+the current directory or any parent supplies defaults; flags override it.
+"""
 
 from __future__ import annotations
 
@@ -6,14 +15,18 @@ import argparse
 import sys
 import webbrowser
 from collections.abc import Sequence
+from pathlib import Path
+from typing import Any
 
-from . import PRESETS, __version__
+from . import CHECK_KINDS, PRESETS, __version__
+from .config import FILE_NAME, ConfigError, find_config, to_cli_defaults, write_starter
 from .proxy import ProxyConfig
 
 DEFAULT_UPSTREAM = "http://localhost:3000"
 DEFAULT_PORT = 8081
 DEFAULT_WIDTHS = [375, 393, 430]
 DEFAULT_HEIGHT = 800
+COMMANDS = ("serve", "shoot", "check", "init")
 
 
 # --- value parsers (exposed for tests) ---------------------------------------------
@@ -83,7 +96,20 @@ def parse_upstream(text: str) -> str:
     return url.rstrip("/")
 
 
-# --- parser --------------------------------------------------------------------------
+def parse_fail_on(text: str) -> list[str]:
+    """``overflow,taps`` -> list; ``none`` -> empty list."""
+    kinds = [k.strip().lower() for k in text.split(",") if k.strip()]
+    if kinds == ["none"]:
+        return []
+    bad = [k for k in kinds if k not in CHECK_KINDS]
+    if bad:
+        raise argparse.ArgumentTypeError(
+            f"unknown check(s) {', '.join(bad)}; choose from {', '.join(CHECK_KINDS)} or none"
+        )
+    return kinds
+
+
+# --- parsers -------------------------------------------------------------------------
 
 
 def _shared(parser: argparse.ArgumentParser) -> None:
@@ -129,6 +155,23 @@ def _shared(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--insecure", action="store_true", help="accept self-signed HTTPS upstream certificates"
     )
+    parser.add_argument(
+        "--no-config", action="store_true", help=f"ignore any {FILE_NAME} / pyproject.toml [tool.phoneframes]"
+    )
+
+
+def _browser_shared(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--landscape", action="store_true", help="swap width and height")
+    parser.add_argument(
+        "--timeout", type=float, default=30.0, metavar="SECONDS", help="page load timeout (default 30)"
+    )
+    parser.add_argument(
+        "--settle",
+        type=float,
+        default=0.5,
+        metavar="SECONDS",
+        help="wait after load before measuring or capturing (default 0.5)",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -136,7 +179,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="phoneframes",
         description="Preview a local web app at phone and tablet sizes, side by side, in a desktop browser.",
-        epilog="Screenshots: phoneframes shoot --help",
+        epilog="Subcommands: phoneframes shoot | check | init  (each has --help)",
     )
     parser.add_argument("--version", action="version", version=f"phoneframes {__version__}")
     _shared(parser)
@@ -182,26 +225,84 @@ def build_parser() -> argparse.ArgumentParser:
 def build_shoot_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="phoneframes shoot",
-        description="Write PNG screenshots of each page at each width using Playwright (optional extra).",
+        description="Write a PNG per page x width plus a contact sheet, using Playwright (optional extra).",
     )
     _shared(parser)
+    _browser_shared(parser)
     parser.add_argument("--out", default="shots", help="output directory (default ./shots)")
     parser.add_argument(
         "--full-page", action="store_true", help="capture the whole scrollable page, not just the viewport"
     )
-    parser.add_argument("--landscape", action="store_true", help="swap width and height")
+    parser.add_argument("--no-sheet", action="store_true", help="skip the tiled contact-sheet PNG")
     return parser
 
 
-def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    """Parse ``argv`` into a namespace with a ``command`` of ``serve`` or ``shoot``."""
+def build_check_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="phoneframes check",
+        description="Run the overflow / tap-target / small-text diagnostics headlessly and exit non-zero "
+        "on selected findings, using Playwright (optional extra).",
+    )
+    _shared(parser)
+    _browser_shared(parser)
+    parser.add_argument(
+        "--fail-on",
+        type=parse_fail_on,
+        default=["overflow"],
+        metavar="overflow,taps,text",
+        help="which findings fail the run (default overflow; 'none' to only report)",
+    )
+    parser.add_argument("--json", metavar="PATH", default=None, help="also write a JSON report here")
+    return parser
+
+
+def build_init_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="phoneframes init",
+        description=f"Write a commented starter {FILE_NAME} in the current directory.",
+    )
+    parser.add_argument("--upstream", type=parse_upstream, default=None, help="pre-fill the upstream URL")
+    parser.add_argument("--path", default=FILE_NAME, help=f"where to write (default ./{FILE_NAME})")
+    parser.add_argument("--force", action="store_true", help="overwrite an existing file")
+    return parser
+
+
+PARSERS = {
+    "serve": build_parser,
+    "shoot": build_shoot_parser,
+    "check": build_check_parser,
+    "init": build_init_parser,
+}
+
+
+def apply_config_defaults(parser: argparse.ArgumentParser, defaults: dict[str, Any]) -> None:
+    """Install config values as parser defaults, ignoring keys this parser does not have."""
+    known = {action.dest for action in parser._actions}
+    parser.set_defaults(**{k: v for k, v in defaults.items() if k in known})
+
+
+def parse_args(argv: Sequence[str] | None = None, config_dir: Path | None = None) -> argparse.Namespace:
+    """Parse ``argv``; ``ns.command`` is one of :data:`COMMANDS`, ``ns.config_path`` the file used."""
     args = list(sys.argv[1:] if argv is None else argv)
-    if args and args[0] == "shoot":
-        ns = build_shoot_parser().parse_args(args[1:])
-        ns.command = "shoot"
-    else:
-        ns = build_parser().parse_args(args)
-        ns.command = "serve"
+    command = "serve"
+    if args and args[0] in COMMANDS:
+        command = args.pop(0)
+    parser = PARSERS[command]()
+
+    config_path: Path | None = None
+    if command != "init" and "--no-config" not in args:
+        try:
+            found = find_config(config_dir)
+            if found:
+                config_path, data = found
+                apply_config_defaults(parser, to_cli_defaults(data))
+        except ConfigError as exc:
+            parser.error(f"config: {exc}")
+
+    ns = parser.parse_args(args)
+    ns.command = command
+    ns.config_path = config_path
+    if command == "serve":
         if ns.watch_url is None and not ns.watch_file and not ns.no_watch:
             ns.watch_url = ns.pages[0]
         if ns.no_watch:
@@ -241,6 +342,8 @@ def serve(ns: argparse.Namespace) -> int:
         return 1
     url = state.url(config.proxy_origin)
     print(f"phoneframes {__version__}: proxying {config.upstream} on {config.proxy_origin}")
+    if ns.config_path:
+        print(f"  config   {ns.config_path}")
     print(f"  harness  {url}")
     print(f"  reload   {detector.describe()}")
     print("  loopback only; never expose this port. Ctrl+C to stop.", flush=True)
@@ -255,12 +358,31 @@ def serve(ns: argparse.Namespace) -> int:
     return 0
 
 
+def init(ns: argparse.Namespace) -> int:
+    path = Path(ns.path)
+    if path.exists() and ns.force:
+        path.unlink()
+    try:
+        write_starter(path, ns.upstream)
+    except FileExistsError:
+        print(f"phoneframes init: {path} exists; pass --force to overwrite", file=sys.stderr)
+        return 1
+    print(f"wrote {path}; edit it, commit it, and contributors can just run `phoneframes`")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     ns = parse_args(argv)
     if ns.command == "shoot":
         from .shoot import shoot
 
         return shoot(ns)
+    if ns.command == "check":
+        from .check import run_check
+
+        return run_check(ns)
+    if ns.command == "init":
+        return init(ns)
     return serve(ns)
 
 

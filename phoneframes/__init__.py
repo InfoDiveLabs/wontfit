@@ -24,3 +24,6 @@ PRESETS = {
 
 #: Path prefix reserved for the harness and its endpoints. Anything else is proxied.
 HARNESS_PATH = "/__phoneframes"
+
+#: Findings ``phoneframes check --fail-on`` can select.
+CHECK_KINDS = ("overflow", "taps", "text")

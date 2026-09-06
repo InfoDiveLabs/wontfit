@@ -1,19 +1,19 @@
 # Changelog
 
-All notable changes to phoneframes are recorded here. The format follows
+All notable changes to wontfit are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
 ### Added
-- `phoneframes.toml` / `[tool.phoneframes]` in `pyproject.toml`, discovered from
-  the current directory upward; flags override. `phoneframes init` writes a
+- `wontfit.toml` / `[tool.wontfit]` in `pyproject.toml`, discovered from
+  the current directory upward; flags override. `wontfit init` writes a
   commented starter. `--no-config` ignores any file. A built-in TOML-subset
   parser covers Python 3.9 and 3.10; 3.11+ uses `tomllib`.
-- `phoneframes check`: the same diagnostics headlessly via Playwright, a
+- `wontfit check`: the same diagnostics headlessly via Playwright, a
   terminal table, `--json` report, and `--fail-on overflow,taps,text` for CI.
-- `phoneframes shoot` now also writes `contact-sheet.png` (all frames tiled),
+- `wontfit shoot` now also writes `contact-sheet.png` (all frames tiled),
   reads the config file, and accepts `--landscape`, `--timeout`, `--settle`.
 - `examples/showcase`: the Ledgerly demo site (marketing pages plus a dashboard)
   that blocks framing and has six planted mobile bugs; `make showcase`.
@@ -21,6 +21,11 @@ All notable changes to phoneframes are recorded here. The format follows
   `docs/recipes.md` for twelve stacks, `docs/ci-example.yml` and a pre-push hook example.
 
 ### Changed
+- **Renamed the project from `phoneframes` to `wontfit`,** before any release.
+  The package, module and console script are `wontfit`; the harness moved from
+  `/__phoneframes` to `/__wontfit`; config lives in `wontfit.toml` or
+  `[tool.wontfit]`. Nothing had been published under the old name, so there is
+  no compatibility shim.
 - Overflow diagnostics list only the outermost offending elements, so a wide
   table no longer reports every `thead`, `tr` and `th` inside it.
 - Frame captions wrap within the frame width instead of widening the column.
@@ -35,7 +40,7 @@ All notable changes to phoneframes are recorded here. The format follows
   bodies, passes `Content-Encoding` through untouched, and supports HTTPS
   upstreams with `--insecure` for self-signed certificates.
 - `--rewrite-host` to control the upstream `Host` header (`preserve` or a literal).
-- Harness at `/__phoneframes`: pages, typed widths or device presets (iPhone SE,
+- Harness at `/__wontfit`: pages, typed widths or device presets (iPhone SE,
   iPhone 15, iPhone 15 Plus, Pixel 8, Galaxy Fold, iPad Mini, iPad, laptop),
   height, orientation toggle, one column per page x width, state in the URL,
   "Reload frames" with the `r` shortcut.
@@ -44,5 +49,5 @@ All notable changes to phoneframes are recorded here. The format follows
   inspect highlighting. All best-effort and safe across cross-origin navigation.
 - Live reload with pluggable detectors: URL body hashing (`--watch-url`,
   `--watch-interval`) and local file mtimes (`--watch-file`), with state in the footer.
-- `phoneframes shoot` for PNG screenshots via Playwright, which stays optional.
+- `wontfit shoot` for PNG screenshots via Playwright, which stays optional.
 - Unit tests (`python3 -m unittest`), GitHub Actions on 3.9 and 3.12, Makefile.

@@ -1,28 +1,33 @@
-# phoneframes
+# wontfit
 
-Preview any locally running web app at phone and tablet sizes, side by side,
-in your normal desktop browser. Even when the app sends `X-Frame-Options` or a
-CSP `frame-ancestors` directive. Even when your browser window is fullscreen.
+**Find out what won't fit before your users do.**
 
-![phoneframes showing a landing page at iPhone SE, iPhone 15 and Pixel 8 widths, each flagged for horizontal overflow](docs/images/hero.png)
+wontfit shows your running web app at phone and tablet widths side by side in
+the browser you already have open, tells you which element is too wide for a
+375px screen, and fails your build when a layout breaks. It works even when
+the app sends `X-Frame-Options` or a CSP `frame-ancestors` directive, and even
+when your browser window is fullscreen.
+
+![Three copies of a landing page at iPhone SE, iPhone 15 and Pixel 8 widths, each flagged for horizontal overflow](docs/images/hero.png)
 
 - **Zero dependencies.** Python 3.9+ standard library only. Binds to loopback.
-- **Diagnostics, not just frames.** Overflow with the culprit element, tap targets
-  under 44px, text under 12px, cross-frame inspect, live reload.
-- **Runs in CI.** `phoneframes check` fails the build on overflow; `phoneframes shoot`
-  writes PNGs and a contact sheet.
+- **It names the culprit.** Not just "this overflows" but `table.compare`,
+  583px too wide. Plus tap targets under 44px, text under 12px, cross-frame
+  inspect and live reload.
+- **Runs in CI.** `wontfit check` fails the build on overflow; `wontfit shoot`
+  writes PNGs and a contact sheet for the pull request.
 
 ## Install
 
 Not on PyPI yet. Until it is, install from git or a checkout:
 
 ```sh
-pipx install git+https://github.com/infodive/phoneframes      # or: uvx --from git+https://github.com/infodive/phoneframes phoneframes
-pipx install .                                                # from a clone
-python3 -m phoneframes                                        # no install at all, from a clone
+pipx install git+https://github.com/Suraj-Tiwari/wontfit   # or: uvx --from git+https://github.com/Suraj-Tiwari/wontfit wontfit
+pipx install .                                             # from a clone
+python3 -m wontfit                                         # no install at all, from a clone
 ```
 
-Once published: `pipx install phoneframes` / `uvx phoneframes`.
+Once published: `pipx install wontfit` / `uvx wontfit`.
 
 ## Try it in 30 seconds
 
@@ -30,14 +35,14 @@ No app of your own running? The repo ships a fake product site that refuses
 to be framed and has six planted mobile bugs:
 
 ```sh
-git clone https://github.com/infodive/phoneframes && cd phoneframes
+git clone https://github.com/Suraj-Tiwari/wontfit && cd wontfit
 make showcase        # starts examples/showcase on :3939 and opens the harness
 ```
 
 With your own app:
 
 ```sh
-phoneframes --upstream http://localhost:3000 --pages /,/pricing --open
+wontfit --upstream http://localhost:3000 --pages /,/pricing --open
 ```
 
 ## See it
@@ -50,7 +55,7 @@ phoneframes --upstream http://localhost:3000 --pages /,/pricing --open
 | ![The same heading highlighted in three frames](docs/images/inspect.png) | **Inspect across frames.** Press `i`, hover an element in one frame, and it is highlighted with its size in every frame; the footer shows the selector. |
 | ![Two landscape frames with a header covering content](docs/images/landscape.png) | **Landscape.** Swaps width and height. Here the app's fixed header grows to two rows and covers the KPI cards. |
 | ![Footer reading watching dist/** changed 12:58:08 1 reload](docs/images/live-reload.png) | **Live reload.** Hash a URL or watch files; the footer shows what is watched, the fingerprint and the last change. |
-| ![Six screenshots tiled on a dark sheet](docs/images/contact-sheet.png) | **`phoneframes shoot`.** A PNG per page x width plus this contact sheet, ready for a pull request. |
+| ![Six screenshots tiled on a dark sheet](docs/images/contact-sheet.png) | **`wontfit shoot`.** A PNG per page x width plus this contact sheet, ready for a pull request. |
 
 ## Why not DevTools device mode, Responsively or Polypane?
 
@@ -63,11 +68,11 @@ element is 40px too wide.
 **Responsively** and **Polypane** are dedicated browsers that solve the
 side-by-side problem well, with synced scrolling, device frames and much more.
 They are also 200-500 MB Electron apps (Polypane is paid), you use them instead
-of your usual browser and extensions, and they do not run in CI. phoneframes
-is a 2,000-line Python package with no dependencies that puts the frames in
-the browser you already have open, adds the four diagnostics a mobile layout
-review actually needs, and ships a `check` command so the same diagnostics
-gate a pull request. If you want synced scrolling, device bezels, or emulated
+of your usual browser and extensions, and they do not run in CI. wontfit is a
+2,000-line Python package with no dependencies that puts the widths in the
+browser you already have open, adds the four diagnostics a mobile layout review
+actually needs, and ships a `check` command so the same diagnostics gate a
+pull request. If you want synced scrolling, device bezels, or emulated
 touch, use one of those tools; if you want something you can `pipx install`
 and forget, this is it.
 
@@ -81,17 +86,17 @@ and forget, this is it.
 | **Live reload** | Pluggable detectors: URL body hash (`--watch-url`, default the first page, every `--watch-interval` seconds) and/or local file mtimes (`--watch-file GLOB`). |
 | **`check`** | Headless diagnostics via Playwright (optional): table, JSON report, exit 1 on `--fail-on overflow,taps,text`. |
 | **`shoot`** | PNG per page x width plus `contact-sheet.png`, via Playwright (optional). |
-| **Config** | `phoneframes.toml` or `[tool.phoneframes]` in `pyproject.toml`, found from the current directory upward. Flags override. `phoneframes init` writes a starter. |
+| **Config** | `wontfit.toml` or `[tool.wontfit]` in `pyproject.toml`, found from the current directory upward. Flags override. `wontfit init` writes a starter. |
 
 ## Configuration
 
 ```sh
-phoneframes init        # writes a commented phoneframes.toml; commit it
-phoneframes             # contributors need nothing else
+wontfit init        # writes a commented wontfit.toml; commit it
+wontfit             # contributors need nothing else
 ```
 
 ```toml
-# phoneframes.toml
+# wontfit.toml
 upstream = "http://localhost:5173"
 pages = ["/", "/pricing", "/dashboard"]
 widths = ["se", "iphone15", "pixel8"]
@@ -104,7 +109,7 @@ session = "dev-session"
 
 Keys: `upstream`, `port`, `pages`, `widths`, `height`, `cookies`, `headers`,
 `watch_url`, `watch_files`, `watch_interval`, `rewrite_host`, `insecure`,
-`out`, `fail_on`. The same table works under `[tool.phoneframes]` in
+`out`, `fail_on`. The same table works under `[tool.wontfit]` in
 `pyproject.toml`. `--no-config` ignores any file. On Python 3.9 and 3.10 a
 small built-in TOML parser reads the file (strings, numbers, booleans,
 arrays, tables); 3.11+ uses `tomllib`.
@@ -112,9 +117,9 @@ arrays, tables); 3.11+ uses `tomllib`.
 ## In CI
 
 ```sh
-pip install 'phoneframes[shoot]' && playwright install --with-deps chromium
-phoneframes check --pages /,/pricing --widths se,iphone15,pixel8 --fail-on overflow --json report.json
-phoneframes shoot --pages /,/pricing --widths se,iphone15,pixel8 --out shots
+pip install 'wontfit[shoot]' && playwright install --with-deps chromium
+wontfit check --pages /,/pricing --widths se,iphone15,pixel8 --fail-on overflow --json report.json
+wontfit shoot --pages /,/pricing --widths se,iphone15,pixel8 --out shots
 ```
 
 ```
@@ -143,7 +148,7 @@ to keep HMR working (its WebSocket does not go through the proxy).
 
 ## Flags
 
-`phoneframes [options]` starts the proxy and harness.
+`wontfit [options]` starts the proxy and harness.
 
 | Flag | Default | What it does |
 |---|---|---|
@@ -161,10 +166,10 @@ to keep HMR working (its WebSocket does not go through the proxy).
 | `--watch-file GLOB` | | Watch local files by mtime and size. Repeatable, `**` allowed. |
 | `--watch-interval S` | `2` | Seconds between checks. |
 | `--no-watch` | off | Disable live reload. |
-| `--no-config` | off | Ignore `phoneframes.toml` / `pyproject.toml`. |
+| `--no-config` | off | Ignore `wontfit.toml` / `pyproject.toml`. |
 | `-v`, `--verbose` | off | Log each proxied request. |
 
-`phoneframes check` and `phoneframes shoot` take `--upstream --pages --widths
+`wontfit check` and `wontfit shoot` take `--upstream --pages --widths
 --height --cookie --header --insecure --no-config --landscape --timeout
 --settle`, plus:
 
@@ -176,7 +181,7 @@ to keep HMR working (its WebSocket does not go through the proxy).
 | shoot | `--full-page` | off | Whole scrollable page, not just the viewport. |
 | shoot | `--no-sheet` | off | Skip `contact-sheet.png`. |
 
-`phoneframes init [--upstream URL] [--path FILE] [--force]` writes the starter config.
+`wontfit init [--upstream URL] [--path FILE] [--force]` writes the starter config.
 
 Harness shortcuts (when the harness itself has focus): `r` reload, `t` tap
 overlay, `i` inspect, `Esc` leave a field. URL keys: `p` pages, `w` widths,
@@ -184,7 +189,7 @@ overlay, `i` inspect, `Esc` leave a field. URL keys: `p` pages, `w` widths,
 
 ## FAQ
 
-**The app sets a CSP. Does phoneframes weaken it?**
+**The app sets a CSP. Does wontfit weaken it?**
 Only `frame-ancestors` is removed. `script-src`, `connect-src`, nonces and the
 rest are forwarded as sent, for `Content-Security-Policy-Report-Only` too.
 `X-Frame-Options` is dropped because it has no other purpose.
@@ -233,7 +238,7 @@ not in the default `--fail-on`.
 
 ## Security note
 
-phoneframes strips framing protection from whatever you point it at and has
+wontfit strips framing protection from whatever you point it at and has
 no authentication, so it binds to `127.0.0.1` only. Never expose the port on a
 network interface, through a tunnel, or via a container port mapping. To
 preview on a real device, use your app's own dev server on the LAN.

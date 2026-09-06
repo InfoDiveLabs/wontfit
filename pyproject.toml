@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phoneframes"
+version = "0.1.0"
+description = "Preview any local web app at phone and tablet widths, side by side, in your desktop browser - even when it sends X-Frame-Options."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+keywords = ["responsive", "mobile", "preview", "proxy", "iframe", "devtools"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Internet :: WWW/HTTP",
+]
+dependencies = []
+
+[project.optional-dependencies]
+shoot = ["playwright>=1.40"]
+dev = ["ruff"]
+
+[project.scripts]
+phoneframes = "phoneframes.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/infodive/phoneframes"
+Changelog = "https://github.com/infodive/phoneframes/blob/main/CHANGELOG.md"
+
+[tool.setuptools]
+packages = ["phoneframes"]
+
+[tool.setuptools.package-data]
+phoneframes = ["assets/*.html", "assets/*.js"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "N"]

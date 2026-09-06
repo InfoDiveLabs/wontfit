@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>phoneframes</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #15171c;
+    --panel: #1d2026;
+    --panel-2: #23272f;
+    --line: #2e333d;
+    --text: #d9dce3;
+    --muted: #8a909c;
+    --accent: #7cc4ff;
+    --ok: #6fcf97;
+    --warn: #f5b74f;
+    --bad: #ff6b6b;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 var(--sans); }
+  button, input { font: inherit; color: inherit; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  .brand { font-weight: 600; letter-spacing: .02em; margin-right: 6px; }
+  .brand small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .field { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .field input[type=text] {
+    background: #0f1115; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px;
+    color: var(--text); font-family: var(--mono); font-size: 12px;
+  }
+  .field input[type=text]:focus { outline: none; border-color: var(--accent); }
+  input[name=pages] { width: 30ch; } input[name=widths] { width: 18ch; } input[name=height] { width: 7ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chips button, .bar > button, .toggle {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 4px 9px; cursor: pointer; color: var(--text);
+  }
+  .chips button { font-size: 11.5px; padding: 3px 8px; color: var(--muted); }
+  .chips button b { color: var(--text); font-weight: 500; margin-left: 4px; font-family: var(--mono); }
+  .chips button.on { border-color: var(--accent); color: var(--accent); }
+  .chips button.on b { color: var(--accent); }
+  .bar > button.primary { background: var(--accent); border-color: var(--accent); color: #0b1220; font-weight: 600; }
+  .toggle { display: inline-flex; align-items: center; gap: 6px; user-select: none; }
+  .toggle input { margin: 0; accent-color: var(--accent); }
+  .toggle.on { border-color: var(--accent); }
+  kbd { font: 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+
+  .frames { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 26px; padding: 22px 20px 30px; }
+  .frame { flex: 0 0 auto; max-width: 100%; }
+  .cap { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .cap .where { font-family: var(--mono); font-size: 12px; color: var(--text); }
+  .cap .where small { color: var(--muted); margin-left: 8px; }
+  .pills { display: flex; gap: 6px; font-family: var(--mono); font-size: 11px; }
+  .pill { padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .pill.ok { color: var(--ok); border-color: rgba(111,207,151,.4); }
+  .pill.warn { color: var(--warn); border-color: rgba(245,183,79,.4); }
+  .pill.bad { color: var(--bad); border-color: rgba(255,107,107,.5); }
+  iframe { display: block; border: 0; background: #fff; border-radius: 10px; box-shadow: 0 14px 34px rgba(0,0,0,.45); max-width: 100%; }
+  .frame.bad iframe { outline: 2px solid var(--bad); outline-offset: 2px; }
+  .frame.noaccess iframe { outline: 2px dashed var(--line); }
+  .detail {
+    margin-top: 6px; padding: 6px 9px; max-width: var(--w); border-radius: 6px;
+    background: rgba(255,107,107,.1); color: #ffb3b3; font: 11px/1.5 var(--mono); white-space: pre-wrap;
+  }
+  .detail.note { background: var(--panel-2); color: var(--muted); }
+
+  .foot {
+    position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center;
+    padding: 7px 16px; background: var(--panel); border-top: 1px solid var(--line);
+    font: 11.5px var(--mono); color: var(--muted);
+  }
+  .foot .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+  .foot .dot.ok { background: var(--ok); } .foot .dot.bad { background: var(--bad); } .foot .dot.off { background: var(--line); }
+  .foot #inspectOut { color: var(--accent); }
+  .foot .spacer { flex: 1; }
+</style>
+</head>
+<body>
+<form class="bar" id="bar" autocomplete="off">
+  <span class="brand">phoneframes<small id="version"></small></span>
+  <label class="field">pages <input type="text" name="pages" placeholder="/,/about" spellcheck="false"></label>
+  <label class="field">widths <input type="text" name="widths" placeholder="375,393,430" spellcheck="false"></label>
+  <span class="chips" id="presets" title="Toggle a device width"></span>
+  <label class="field">height <input type="text" name="height" placeholder="800" spellcheck="false"></label>
+  <label class="toggle" title="Swap width and height"><input type="checkbox" name="landscape"> landscape</label>
+  <button class="primary" type="submit">Render</button>
+  <button type="button" id="reload" title="Reload every frame">Reload frames<kbd>r</kbd></button>
+  <label class="toggle" title="Reload frames when the watched target changes"><input type="checkbox" name="live"> live reload</label>
+  <label class="toggle" title="Outline interactive elements smaller than 44x44 CSS px"><input type="checkbox" name="tap"> tap targets<kbd>t</kbd></label>
+  <label class="toggle" title="Highlight the element under the cursor in every frame"><input type="checkbox" name="inspect"> inspect<kbd>i</kbd></label>
+</form>
+
+<div class="frames" id="frames"></div>
+
+<div class="foot">
+  <span><span class="dot" id="watchDot"></span><span id="watchOut">live reload</span></span>
+  <span id="inspectOut"></span>
+  <span class="spacer"></span>
+  <span id="summary"></span>
+</div>
+
+<script>
+/*__PHONEFRAMES_DIAGNOSTICS__*/
+</script>
+<script>
+(function () {
+  "use strict";
+  var CONFIG = /*__PHONEFRAMES_CONFIG__*/null;
+  var D = window.PhoneframesDiagnostics;
+  var bar = document.getElementById("bar");
+  var framesEl = document.getElementById("frames");
+  var presetsEl = document.getElementById("presets");
+  var watchOut = document.getElementById("watchOut"), watchDot = document.getElementById("watchDot");
+  var inspectOut = document.getElementById("inspectOut"), summary = document.getElementById("summary");
+  document.getElementById("version").textContent = "v" + CONFIG.version;
+
+  var presetByWidth = {};
+  CONFIG.presets.forEach(function (p) { presetByWidth[p.width] = presetByWidth[p.width] || p.name; });
+
+  /* ---- state <-> URL (mirrors phoneframes.harness.HarnessState) ------------ */
+
+  function readState() {
+    var q = new URLSearchParams(location.search);
+    var pages = (q.get("p") || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean)
+      .map(function (p) { return p.charAt(0) === "/" ? p : "/" + p; });
+    var widths = (q.get("w") || "").split(",").map(function (s) {
+      s = s.trim().toLowerCase();
+      var preset = CONFIG.presets.filter(function (p) { return p.key === s; })[0];
+      return preset ? preset.width : parseInt(s, 10);
+    }).filter(function (n) { return n >= 100 && n <= 4000; });
+    var h = parseInt(q.get("h"), 10);
+    return {
+      pages: pages.length ? pages : CONFIG.pages,
+      widths: widths.length ? widths : CONFIG.widths,
+      height: h >= 100 && h <= 4000 ? h : CONFIG.height,
+      landscape: q.has("o") ? q.get("o") === "l" : CONFIG.landscape,
+      live: q.has("live") ? q.get("live") !== "0" : CONFIG.live
+    };
+  }
+
+  function stateFromForm() {
+    return {
+      pages: bar.pages.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean)
+        .map(function (p) { return p.charAt(0) === "/" ? p : "/" + p; }),
+      widths: bar.widths.value.split(",").map(function (s) {
+        s = s.trim().toLowerCase();
+        var preset = CONFIG.presets.filter(function (p) { return p.key === s; })[0];
+        return preset ? preset.width : parseInt(s, 10);
+      }).filter(function (n) { return n >= 100 && n <= 4000; }),
+      height: parseInt(bar.height.value, 10) || CONFIG.height,
+      landscape: bar.landscape.checked,
+      live: bar.live.checked
+    };
+  }
+
+  function writeState(s) {
+    var q = new URLSearchParams();
+    q.set("p", s.pages.join(","));
+    q.set("w", s.widths.join(","));
+    q.set("h", String(s.height));
+    if (s.landscape) q.set("o", "l");
+    if (!s.live) q.set("live", "0");
+    history.replaceState(null, "", "?" + q.toString().replace(/%2C/g, ",").replace(/%2F/g, "/"));
+  }
+
+  function fillForm(s) {
+    bar.pages.value = s.pages.join(",");
+    bar.widths.value = s.widths.join(",");
+    bar.height.value = String(s.height);
+    bar.landscape.checked = s.landscape;
+    bar.live.checked = s.live;
+    syncPresets();
+  }
+
+  /* ---- presets ------------------------------------------------------------- */
+
+  CONFIG.presets.forEach(function (p) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.dataset.width = p.width;
+    b.appendChild(document.createTextNode(p.name));
+    var w = document.createElement("b"); w.textContent = p.width; b.appendChild(w);
+    b.addEventListener("click", function () {
+      var ws = bar.widths.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+      var i = ws.indexOf(String(p.width));
+      if (i >= 0) ws.splice(i, 1); else ws.push(String(p.width));
+      bar.widths.value = ws.join(",");
+      render();
+    });
+    presetsEl.appendChild(b);
+  });
+  function syncPresets() {
+    var ws = bar.widths.value.split(",").map(function (s) { return s.trim(); });
+    presetsEl.querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", ws.indexOf(b.dataset.width) >= 0); });
+  }
+
+  /* ---- frames -------------------------------------------------------------- */
+
+  var frames = [];   // { el, iframe, page, width, height, device, report, detach }
+
+  function pill(cls, text) {
+    var s = document.createElement("span"); s.className = "pill " + cls; s.textContent = text; return s;
+  }
+
+  function buildFrame(page, width, height, device) {
+    var el = document.createElement("div"); el.className = "frame"; el.style.setProperty("--w", width + "px");
+    var cap = document.createElement("div"); cap.className = "cap";
+    var where = document.createElement("span"); where.className = "where";
+    var path = document.createElement("span"); path.textContent = page;
+    var meta = document.createElement("small");
+    meta.textContent = (presetByWidth[device] ? presetByWidth[device] + " " : "") + width + "x" + height;
+    where.appendChild(path); where.appendChild(meta);
+    var pills = document.createElement("span"); pills.className = "pills"; pills.appendChild(pill("", "loading"));
+    cap.appendChild(where); cap.appendChild(pills);
+    var iframe = document.createElement("iframe");
+    iframe.width = width; iframe.height = height; iframe.title = page + " at " + width; iframe.src = page;
+    var detail = document.createElement("div"); detail.className = "detail"; detail.hidden = true;
+    el.appendChild(cap); el.appendChild(iframe); el.appendChild(detail);
+    var f = { el: el, iframe: iframe, page: page, width: width, height: height, device: device, path: path, pills: pills, detail: detail, detach: null };
+    iframe.addEventListener("load", function () {
+      // Give layout, fonts and hydration a moment before measuring.
+      setTimeout(function () { check(f); }, 350);
+    });
+    return f;
+  }
+
+  function render() {
+    var s = stateFromForm();
+    if (!s.pages.length) s.pages = CONFIG.pages;
+    if (!s.widths.length) s.widths = CONFIG.widths;
+    fillForm(s); writeState(s);
+    frames.forEach(function (f) { if (f.detach) f.detach(); });
+    frames = [];
+    framesEl.textContent = "";
+    s.pages.forEach(function (page) {
+      s.widths.forEach(function (w) {
+        var f = s.landscape ? buildFrame(page, s.height, w, w) : buildFrame(page, w, s.height, w);
+        frames.push(f);
+        framesEl.appendChild(f.el);
+      });
+    });
+    updateSummary();
+  }
+
+  function reloadAll() {
+    frames.forEach(function (f) {
+      try { f.iframe.contentWindow.location.reload(); }
+      catch (e) { f.iframe.src = f.iframe.src; }
+    });
+  }
+
+  /* ---- diagnostics --------------------------------------------------------- */
+
+  function check(f) {
+    f.pills.textContent = "";
+    f.detail.hidden = true;
+    f.el.classList.remove("bad", "noaccess");
+    if (f.detach) { f.detach(); f.detach = null; }
+    if (!D.canAccess(f.iframe)) {
+      f.el.classList.add("noaccess");
+      f.pills.appendChild(pill("", "cross-origin"));
+      f.detail.className = "detail note";
+      f.detail.textContent = "This frame navigated to another origin; diagnostics are unavailable there.";
+      f.detail.hidden = false;
+      f.report = null;
+      updateSummary();
+      return;
+    }
+    var doc = f.iframe.contentDocument;
+    try {
+      var loc = f.iframe.contentWindow.location;
+      f.path.textContent = loc.pathname + loc.search + loc.hash;
+    } catch (e) { /* keep the requested path */ }
+    var report;
+    try {
+      D.clearOverlays(doc);
+      report = D.analyze(doc);
+    } catch (e) {
+      f.pills.appendChild(pill("", "no data"));
+      f.report = null;
+      updateSummary();
+      return;
+    }
+    f.report = report;
+    if (report.overflow) {
+      f.el.classList.add("bad");
+      f.pills.appendChild(pill("bad", "overflow +" + report.overflow.amount + "px"));
+      f.detail.className = "detail";
+      f.detail.textContent = report.overflow.culprits.map(function (c) {
+        return c.label + "  " + c.left + ".." + c.right + " (" + c.width + "px)";
+      }).join("\n") || "page is wider than the viewport; no single element found poking out";
+      f.detail.hidden = false;
+    } else {
+      f.pills.appendChild(pill("ok", "fits"));
+    }
+    if (report.tapTargets.length) f.pills.appendChild(pill("warn", report.tapTargets.length + " small taps"));
+    if (report.smallText) f.pills.appendChild(pill("warn", report.smallText + " text<12px"));
+    if (bar.tap.checked) { try { D.renderTapOverlay(doc, report.tapTargets); } catch (e) { /* best effort */ } }
+    if (bar.inspect.checked) attachInspect(f);
+    updateSummary();
+  }
+
+  function updateSummary() {
+    var n = frames.length, over = 0, taps = 0;
+    frames.forEach(function (f) {
+      if (f.report && f.report.overflow) over++;
+      if (f.report) taps += f.report.tapTargets.length;
+    });
+    summary.textContent = n + " frame" + (n === 1 ? "" : "s") + (over ? " · " + over + " overflowing" : "") + (taps ? " · " + taps + " small tap targets" : "");
+  }
+
+  function applyTapOverlay() {
+    frames.forEach(function (f) {
+      if (!f.report || !D.canAccess(f.iframe)) return;
+      try {
+        if (bar.tap.checked) D.renderTapOverlay(f.iframe.contentDocument, f.report.tapTargets);
+        else D.clearOverlays(f.iframe.contentDocument, "tap");
+      } catch (e) { /* best effort */ }
+    });
+  }
+
+  function attachInspect(f) {
+    if (f.detach || !D.canAccess(f.iframe)) return;
+    try {
+      f.detach = D.attachInspect(f.iframe.contentDocument, function (selector, name) {
+        inspectOut.textContent = name + "  " + selector;
+        frames.forEach(function (g) {
+          if (!D.canAccess(g.iframe)) return;
+          try { D.highlight(g.iframe.contentDocument, selector, name); } catch (e) { /* best effort */ }
+        });
+      }, function () {
+        inspectOut.textContent = "";
+        frames.forEach(function (g) {
+          if (!D.canAccess(g.iframe)) return;
+          try { D.clearOverlays(g.iframe.contentDocument, "inspect"); } catch (e) { /* best effort */ }
+        });
+      });
+    } catch (e) { f.detach = null; }
+  }
+
+  function applyInspect() {
+    frames.forEach(function (f) {
+      if (bar.inspect.checked) attachInspect(f);
+      else if (f.detach) {
+        f.detach(); f.detach = null;
+        try { D.clearOverlays(f.iframe.contentDocument, "inspect"); } catch (e) { /* best effort */ }
+      }
+    });
+    if (!bar.inspect.checked) inspectOut.textContent = "";
+    bar.inspect.parentNode.classList.toggle("on", bar.inspect.checked);
+  }
+
+  /* ---- live reload --------------------------------------------------------- */
+
+  var lastFingerprint = null, reloads = 0, pollTimer = null;
+  function fmtTime(t) {
+    var d = new Date(t * 1000);
+    return d.toTimeString().slice(0, 8);
+  }
+  function poll() {
+    if (!bar.live.checked) {
+      watchDot.className = "dot off";
+      watchOut.textContent = "live reload off";
+      return;
+    }
+    fetch(CONFIG.path + "/watch", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (st) {
+      if (st.strategy === "off") {
+        watchDot.className = "dot off";
+        watchOut.textContent = st.description;
+        return;
+      }
+      if (!st.reachable) {
+        watchDot.className = "dot bad";
+        watchOut.textContent = st.description + " · unreachable";
+        return;
+      }
+      if (lastFingerprint && st.fingerprint !== lastFingerprint) {
+        reloads++;
+        reloadAll();
+      }
+      lastFingerprint = st.fingerprint;
+      watchDot.className = "dot ok";
+      watchOut.textContent = st.description + " every " + CONFIG.watch.interval + "s · " + st.fingerprint +
+        (st.changed_at ? " · changed " + fmtTime(st.changed_at) : "") + (reloads ? " · " + reloads + " reload" + (reloads === 1 ? "" : "s") : "");
+    }).catch(function () {
+      watchDot.className = "dot bad";
+      watchOut.textContent = "phoneframes proxy unreachable";
+    });
+  }
+  function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(poll, Math.max(500, CONFIG.watch.interval * 1000));
+    poll();
+  }
+
+  /* ---- wiring -------------------------------------------------------------- */
+
+  bar.addEventListener("submit", function (ev) { ev.preventDefault(); render(); });
+  document.getElementById("reload").addEventListener("click", reloadAll);
+  bar.landscape.addEventListener("change", render);
+  bar.live.addEventListener("change", function () { writeState(stateFromForm()); poll(); });
+  bar.tap.addEventListener("change", function () { applyTapOverlay(); bar.tap.parentNode.classList.toggle("on", bar.tap.checked); });
+  bar.inspect.addEventListener("change", applyInspect);
+
+  document.addEventListener("keydown", function (ev) {
+    var t = ev.target;
+    var typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+    if (ev.key === "Escape" && typing) { t.blur(); return; }
+    if (typing || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (ev.key === "r") { ev.preventDefault(); reloadAll(); }
+    else if (ev.key === "t") { bar.tap.checked = !bar.tap.checked; bar.tap.dispatchEvent(new Event("change")); }
+    else if (ev.key === "i") { bar.inspect.checked = !bar.inspect.checked; bar.inspect.dispatchEvent(new Event("change")); }
+  });
+
+  fillForm(readState());
+  render();
+  startPolling();
+})();
+</script>
+</body>
+</html>

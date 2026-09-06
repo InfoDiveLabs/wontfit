@@ -27,14 +27,15 @@ import ssl
 import sys
 import threading
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Iterable, List, Optional, Tuple
+from typing import Callable
 from urllib.parse import urlsplit
 
 from . import HARNESS_PATH, __version__
 
-Header = Tuple[str, str]
-Headers = List[Header]
+Header = tuple[str, str]
+Headers = list[Header]
 
 #: Headers that describe the connection, not the message. Never forwarded either way.
 HOP_BY_HOP = frozenset(
@@ -55,7 +56,7 @@ CHUNK = 64 * 1024
 DEFAULT_PORTS = {"http": 80, "https": 443}
 
 
-def origin_of(url: str) -> Tuple[str, str, int]:
+def origin_of(url: str) -> tuple[str, str, int]:
     """Return ``(scheme, host, port)`` for a URL, filling in the default port."""
     parts = urlsplit(url)
     scheme = (parts.scheme or "http").lower()
@@ -77,7 +78,7 @@ def _netloc(url: str) -> str:
     return f"{host}:{port}"
 
 
-def strip_frame_ancestors(csp: str) -> Optional[str]:
+def strip_frame_ancestors(csp: str) -> str | None:
     """Remove the ``frame-ancestors`` directive from a CSP value, keeping the rest.
 
     Returns ``None`` when nothing is left, meaning the header should be dropped.
@@ -159,11 +160,11 @@ class ProxyConfig:
     upstream: str = "http://localhost:3000"
     host: str = "127.0.0.1"
     port: int = 8081
-    cookies: List[Tuple[str, str]] = field(default_factory=list)
-    headers: List[Tuple[str, str]] = field(default_factory=list)
+    cookies: list[tuple[str, str]] = field(default_factory=list)
+    headers: list[tuple[str, str]] = field(default_factory=list)
     insecure: bool = False
     #: Value for the upstream ``Host`` header. ``"preserve"`` forwards the browser's.
-    rewrite_host: Optional[str] = None
+    rewrite_host: str | None = None
     verbose: bool = False
     timeout: float = 30.0
 
@@ -175,7 +176,7 @@ class ProxyConfig:
     def upstream_is_tls(self) -> bool:
         return origin_of(self.upstream)[0] == "https"
 
-    def upstream_host_header(self, client_host: Optional[str]) -> str:
+    def upstream_host_header(self, client_host: str | None) -> str:
         """Pick the ``Host`` value to send upstream (see ``--rewrite-host``)."""
         if self.rewrite_host == "preserve":
             return client_host or _netloc(self.upstream)
@@ -183,7 +184,7 @@ class ProxyConfig:
             return self.rewrite_host
         return _netloc(self.upstream)
 
-    def ssl_context(self) -> Optional[ssl.SSLContext]:
+    def ssl_context(self) -> ssl.SSLContext | None:
         if not self.upstream_is_tls:
             return None
         ctx = ssl.create_default_context()
@@ -207,8 +208,8 @@ def build_upstream_headers(config: ProxyConfig, incoming: Iterable[Header]) -> H
     merges ``--cookie`` values into ``Cookie`` and appends ``--header`` extras.
     """
     out: Headers = []
-    client_host: Optional[str] = None
-    cookie_parts: List[str] = []
+    client_host: str | None = None
+    cookie_parts: list[str] = []
     for name, value in incoming:
         lname = name.lower()
         if lname in HOP_BY_HOP:
@@ -288,7 +289,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
     sys_version = ""
     config: ProxyConfig = ProxyConfig()
     #: Called for ``/__phoneframes*`` paths. Returns True when it handled the request.
-    harness_route: Optional[HarnessRoute] = None
+    harness_route: HarnessRoute | None = None
 
     # -- plumbing -----------------------------------------------------------------
 
@@ -324,7 +325,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
     # -- the proxy ----------------------------------------------------------------
 
-    def _read_request_body(self) -> Optional[bytes]:
+    def _read_request_body(self) -> bytes | None:
         if "chunked" in (self.headers.get("Transfer-Encoding") or "").lower():
             return _read_chunked(self.rfile)
         length = int(self.headers.get("Content-Length") or 0)
@@ -347,8 +348,11 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             conn.endheaders(body)
             resp = conn.getresponse()
         except ssl.SSLCertVerificationError as exc:
-            self.send_text(502, f"phoneframes: TLS verification failed for {self.config.upstream}: {exc}\n"
-                                "Pass --insecure to accept a self-signed certificate.")
+            self.send_text(
+                502,
+                f"phoneframes: TLS verification failed for {self.config.upstream}: {exc}\n"
+                "Pass --insecure to accept a self-signed certificate.",
+            )
             return
         except (OSError, http.client.HTTPException) as exc:
             self.send_text(502, f"phoneframes: upstream {self.config.upstream} unreachable: {exc}")
@@ -407,8 +411,10 @@ class ProxyServer(http.server.ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self, config: ProxyConfig, harness_route: Optional[HarnessRoute] = None):
-        handler = type("ConfiguredProxyHandler", (ProxyHandler,), {"config": config, "harness_route": harness_route})
+    def __init__(self, config: ProxyConfig, harness_route: HarnessRoute | None = None):
+        # staticmethod: a plain function stored on the class would otherwise bind as a method.
+        attrs = {"config": config, "harness_route": staticmethod(harness_route) if harness_route else None}
+        handler = type("ConfiguredProxyHandler", (ProxyHandler,), attrs)
         super().__init__((config.host, config.port), handler)
         self.config = config
         config.port = self.server_address[1]  # resolve port 0 to the real one

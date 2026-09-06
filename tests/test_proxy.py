@@ -44,14 +44,19 @@ class RewriteLocationTests(unittest.TestCase):
         self.assertEqual(rewrite_location("/login", CFG.upstream, CFG.proxy_origin), "/login")
 
     def test_other_origin_untouched(self):
-        self.assertEqual(rewrite_location("https://example.com/", CFG.upstream, CFG.proxy_origin), "https://example.com/")
+        self.assertEqual(
+            rewrite_location("https://example.com/", CFG.upstream, CFG.proxy_origin), "https://example.com/"
+        )
 
     def test_default_port_equivalence(self):
         out = rewrite_location("http://localhost/", "http://localhost:80", CFG.proxy_origin)
         self.assertEqual(out, "http://127.0.0.1:8081/")
 
     def test_origin_header_rewritten_back(self):
-        self.assertEqual(rewrite_origin_header("http://127.0.0.1:8081", CFG.upstream, CFG.proxy_origin), "http://localhost:3000")
+        self.assertEqual(
+            rewrite_origin_header("http://127.0.0.1:8081", CFG.upstream, CFG.proxy_origin),
+            "http://localhost:3000",
+        )
         self.assertEqual(
             rewrite_origin_header("http://127.0.0.1:8081/a?b=1", CFG.upstream, CFG.proxy_origin),
             "http://localhost:3000/a?b=1",
@@ -70,27 +75,35 @@ class RewriteSetCookieTests(unittest.TestCase):
 
 class UpstreamHeaderTests(unittest.TestCase):
     def test_host_replaced_and_hop_by_hop_dropped(self):
-        out = build_upstream_headers(CFG, [("Host", "127.0.0.1:8081"), ("Connection", "keep-alive"), ("Accept", "*/*")])
+        out = build_upstream_headers(
+            CFG, [("Host", "127.0.0.1:8081"), ("Connection", "keep-alive"), ("Accept", "*/*")]
+        )
         self.assertEqual(out[0], ("Host", "localhost:3000"))
         self.assertIn(("Accept", "*/*"), out)
         self.assertNotIn("Connection", [k for k, _ in out])
 
     def test_rewrite_host_modes(self):
         preserve = ProxyConfig(upstream="http://localhost:3000", rewrite_host="preserve")
-        self.assertEqual(build_upstream_headers(preserve, [("Host", "127.0.0.1:8081")])[0], ("Host", "127.0.0.1:8081"))
+        self.assertEqual(
+            build_upstream_headers(preserve, [("Host", "127.0.0.1:8081")])[0], ("Host", "127.0.0.1:8081")
+        )
         literal = ProxyConfig(upstream="http://localhost:3000", rewrite_host="app.test")
         self.assertEqual(build_upstream_headers(literal, [("Host", "x")])[0], ("Host", "app.test"))
         https_default = ProxyConfig(upstream="https://app.local")
         self.assertEqual(build_upstream_headers(https_default, [])[0], ("Host", "app.local"))
 
     def test_cookies_and_extra_headers_merged(self):
-        cfg = ProxyConfig(upstream="http://localhost:3000", cookies=[("sid", "abc")], headers=[("X-Dev", "1")])
+        cfg = ProxyConfig(
+            upstream="http://localhost:3000", cookies=[("sid", "abc")], headers=[("X-Dev", "1")]
+        )
         out = build_upstream_headers(cfg, [("Cookie", "theme=dark")])
         self.assertIn(("Cookie", "theme=dark; sid=abc"), out)
         self.assertIn(("X-Dev", "1"), out)
 
     def test_origin_and_referer_rewritten(self):
-        out = build_upstream_headers(CFG, [("Origin", "http://127.0.0.1:8081"), ("Referer", "http://127.0.0.1:8081/x")])
+        out = build_upstream_headers(
+            CFG, [("Origin", "http://127.0.0.1:8081"), ("Referer", "http://127.0.0.1:8081/x")]
+        )
         self.assertIn(("Origin", "http://localhost:3000"), out)
         self.assertIn(("Referer", "http://localhost:3000/x"), out)
 
@@ -153,7 +166,11 @@ class FakeUpstream(http.server.BaseHTTPRequestHandler):
         if self.path == "/redirect":
             self._send(302, b"", [("Location", f"http://{self.headers['Host']}/landed")])
         elif self.path == "/gz":
-            self._send(200, gzip.compress(b"hello gzip"), [("Content-Encoding", "gzip"), ("Content-Type", "text/plain")])
+            self._send(
+                200,
+                gzip.compress(b"hello gzip"),
+                [("Content-Encoding", "gzip"), ("Content-Type", "text/plain")],
+            )
         elif self.path == "/chunky":
             self.send_response(200)
             self.send_header("Transfer-Encoding", "chunked")
@@ -163,7 +180,11 @@ class FakeUpstream(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(b"%x\r\n%s\r\n" % (len(part), part))
             self.wfile.write(b"0\r\n\r\n")
         else:
-            self._send(200, b"<h1>hi</h1>", [("Content-Type", "text/html"), ("Set-Cookie", "sid=1; Secure; Domain=localhost")])
+            self._send(
+                200,
+                b"<h1>hi</h1>",
+                [("Content-Type", "text/html"), ("Set-Cookie", "sid=1; Secure; Domain=localhost")],
+            )
 
     do_HEAD = do_GET
 

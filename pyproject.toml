@@ -51,3 +51,5 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "N"]
+# N815: http.server dispatches on do_GET / do_POST; the names are not ours to choose.
+ignore = ["N815"]

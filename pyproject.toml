@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wontfit"
-version = "0.2.1"
+version = "0.2.2"
 description = "See your running app at phone and tablet widths side by side, and find out what won't fit before your users do."
 readme = "README.md"
 license = "MIT"

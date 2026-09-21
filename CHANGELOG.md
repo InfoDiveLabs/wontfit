@@ -6,6 +6,8 @@ All notable changes to wontfit are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-21
+
 ### Fixed
 - Overflow no longer blames elements parked past the start edge of the page,
   such as a skip link at `left: -9999px`. That content is clipped, not
@@ -15,8 +17,8 @@ All notable changes to wontfit are recorded here. The format follows
 
 ### Changed
 - The README links to the product page and online documentation on
-  infodivelabs.com. Package metadata points Homepage and Documentation there,
-  which PyPI picks up with the next release.
+  infodivelabs.com, and the package metadata's Homepage and Documentation
+  URLs point there, so PyPI shows them from this release.
 
 ## [0.2.1] - 2026-09-21
 
@@ -85,6 +87,7 @@ as the record of what the first cut contained.
 - `wontfit shoot` for PNG screenshots via Playwright, which stays optional.
 - Unit tests (`python3 -m unittest`), GitHub Actions on 3.9 and 3.12, Makefile.
 
-[Unreleased]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/InfoDiveLabs/wontfit/releases/tag/v0.2.0

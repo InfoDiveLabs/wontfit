@@ -6,6 +6,11 @@ All notable changes to wontfit are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- The README links to the product page and online documentation on
+  infodivelabs.com. Package metadata points Homepage and Documentation there,
+  which PyPI picks up with the next release.
+
 ## [0.2.1] - 2026-09-21
 
 ### Changed

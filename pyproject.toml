@@ -37,7 +37,8 @@ dev = ["ruff"]
 wontfit = "wontfit.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/InfoDiveLabs/wontfit"
+Homepage = "https://www.infodivelabs.com/products/wontfit"
+Documentation = "https://www.infodivelabs.com/products/wontfit/docs"
 Repository = "https://github.com/InfoDiveLabs/wontfit"
 Issues = "https://github.com/InfoDiveLabs/wontfit/issues"
 Changelog = "https://github.com/InfoDiveLabs/wontfit/blob/main/CHANGELOG.md"

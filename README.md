@@ -7,6 +7,11 @@
 
 **Find out what won't fit before your users do.**
 
+[Website](https://www.infodivelabs.com/products/wontfit) ·
+[Documentation](https://www.infodivelabs.com/products/wontfit/docs) ·
+[PyPI](https://pypi.org/project/wontfit/) ·
+[Changelog](https://github.com/InfoDiveLabs/wontfit/blob/main/CHANGELOG.md)
+
 wontfit shows your running web app at phone and tablet widths side by side in
 the browser you already have open, tells you which element is too wide for a
 375px screen, and fails your build when a layout breaks. It works even when
@@ -158,7 +163,7 @@ the report and screenshots as artifacts is in
 
 ## Your stack
 
-[docs/recipes.md](https://github.com/InfoDiveLabs/wontfit/blob/main/docs/recipes.md) has copy-paste commands and the one gotcha
+[docs/recipes.md](https://github.com/InfoDiveLabs/wontfit/blob/main/docs/recipes.md) (also in the [online docs](https://www.infodivelabs.com/products/wontfit/docs#recipes-by-stack)) has copy-paste commands and the one gotcha
 per framework for Vite/React, Next.js, Nuxt, SvelteKit, Django, Flask/FastAPI,
 Rails, Go, Laravel, static sites, Storybook and Docker Compose, including how
 to keep HMR working (its WebSocket does not go through the proxy).
@@ -273,6 +278,6 @@ See [CONTRIBUTING.md](https://github.com/InfoDiveLabs/wontfit/blob/main/CONTRIBU
 
 ## License
 
-MIT. Built and maintained by [InfoDive Labs](https://www.infodivelabs.com).
+MIT. Built and maintained by [InfoDive Labs](https://www.infodivelabs.com/products/wontfit).
 Bug reports and pull requests are welcome in
 [issues](https://github.com/InfoDiveLabs/wontfit/issues).

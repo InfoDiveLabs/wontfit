@@ -4,11 +4,8 @@ on:
   push:
     tags: ["v*"]
 
-permissions:
-  contents: write
-
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,10 +23,43 @@ jobs:
 
       - name: Build sdist and wheel
         run: |
-          python -m pip install --quiet build
+          python -m pip install --quiet build twine
           python -m build
+          python -m twine check --strict dist/*
           python -m pip install --quiet dist/*.whl
           wontfit --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/wontfit/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
       - name: Release notes from CHANGELOG.md
         run: |
@@ -46,10 +76,11 @@ jobs:
           ## Install
 
           \`\`\`sh
-          pipx install git+https://github.com/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}
-          # or the wheel attached below
-          pipx install https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/wontfit-${version}-py3-none-any.whl
+          pipx install wontfit==${version}
+          # or: uvx wontfit@${version}
           \`\`\`
+
+          [PyPI](https://pypi.org/project/wontfit/${version}/)
           NOTES
 
       - name: Publish the GitHub release

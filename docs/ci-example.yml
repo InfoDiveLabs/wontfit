@@ -37,7 +37,7 @@ jobs:
       # --- wontfit --------------------------------------------------------------
       - name: Install wontfit with the Playwright extra
         run: |
-          python -m pip install --quiet 'wontfit[shoot] @ git+https://github.com/InfoDiveLabs/wontfit@v0.2.0'
+          python -m pip install --quiet 'wontfit[shoot]'
           python -m playwright install --with-deps chromium
 
       - name: Check phone layouts (fails on overflow)

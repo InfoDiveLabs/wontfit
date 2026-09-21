@@ -13,7 +13,7 @@ from typing import Any
 
 INSTALL_HINT = (
     "This command needs Playwright, which is optional:\n"
-    "    pip install playwright && playwright install chromium\n"
+    "    pip install 'wontfit[shoot]' && playwright install chromium\n"
     "    # installed with pipx: pipx inject --include-apps wontfit playwright\n"
 )
 

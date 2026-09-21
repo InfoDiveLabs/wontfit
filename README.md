@@ -1,9 +1,9 @@
 # wontfit
 
 [![CI](https://github.com/InfoDiveLabs/wontfit/actions/workflows/ci.yml/badge.svg)](https://github.com/InfoDiveLabs/wontfit/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/InfoDiveLabs/wontfit)](https://github.com/InfoDiveLabs/wontfit/releases/latest)
+[![PyPI](https://img.shields.io/pypi/v/wontfit)](https://pypi.org/project/wontfit/)
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/InfoDiveLabs/wontfit/blob/main/LICENSE)
 
 **Find out what won't fit before your users do.**
 
@@ -13,7 +13,7 @@ the browser you already have open, tells you which element is too wide for a
 the app sends `X-Frame-Options` or a CSP `frame-ancestors` directive, and even
 when your browser window is fullscreen.
 
-![Three copies of a landing page at iPhone SE, iPhone 15 and Pixel 8 widths, each flagged for horizontal overflow](docs/images/hero.png)
+![Three copies of a landing page at iPhone SE, iPhone 15 and Pixel 8 widths, each flagged for horizontal overflow](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/hero.png)
 
 - **Zero dependencies.** Python 3.9+ standard library only. Binds to loopback.
 - **It names the culprit.** Not just "this overflows" but `table.compare`,
@@ -24,37 +24,26 @@ when your browser window is fullscreen.
 
 ## Install
 
-wontfit is not on PyPI, so install it from this repository. Pin the
-release tag; drop `@v0.2.0` to track `main`.
-
 ```sh
-pipx install git+https://github.com/InfoDiveLabs/wontfit@v0.2.0
-# or with uv
-uv tool install git+https://github.com/InfoDiveLabs/wontfit@v0.2.0
-# or run once without installing
-uvx --from git+https://github.com/InfoDiveLabs/wontfit@v0.2.0 wontfit --help
-```
-
-Every [release](https://github.com/InfoDiveLabs/wontfit/releases) also
-carries a wheel and an sdist, so you can install without git:
-
-```sh
-pipx install https://github.com/InfoDiveLabs/wontfit/releases/download/v0.2.0/wontfit-0.2.0-py3-none-any.whl
+pipx install wontfit       # or: uv tool install wontfit
+uvx wontfit --help         # or run it once without installing
 ```
 
 `wontfit check` and `wontfit shoot` drive a headless browser, which is an
 optional extra:
 
 ```sh
-pipx install --include-deps 'wontfit[shoot] @ git+https://github.com/InfoDiveLabs/wontfit@v0.2.0'
+pipx install --include-deps 'wontfit[shoot]'
 playwright install chromium
 ```
 
 Already installed without it? `pipx inject --include-apps wontfit playwright`,
 then `playwright install chromium`.
 
-Nothing to install at all: clone it and run `python3 -m wontfit` from the
-checkout. The core is standard library only.
+Every [GitHub release](https://github.com/InfoDiveLabs/wontfit/releases) carries
+the same wheel and sdist, and `main` installs straight from git:
+`pipx install git+https://github.com/InfoDiveLabs/wontfit`. Nothing to install
+at all: clone it and run `python3 -m wontfit`. The core is standard library only.
 
 ## Try it in 30 seconds
 
@@ -76,13 +65,13 @@ wontfit --upstream http://localhost:3000 --pages /,/pricing --open
 
 | | |
 |---|---|
-| ![Three pages at three phone widths](docs/images/harness.png) | **The harness.** One column per page x width; each frame carries its own verdict. Layout state lives in the URL, so this is a shareable link. |
-| ![A frame flagged red with its overflow culprit](docs/images/overflow.png) | **Overflow, named.** The pricing table is 583px too wide; the culprit list says `table.compare` and its bounds. |
-| ![Dashed outlines around small buttons](docs/images/tap-targets.png) | **Tap targets.** Press `t` to outline every interactive element under 44x44 CSS px inside the frame. |
-| ![The same heading highlighted in three frames](docs/images/inspect.png) | **Inspect across frames.** Press `i`, hover an element in one frame, and it is highlighted with its size in every frame; the footer shows the selector. |
-| ![Two landscape frames with a header covering content](docs/images/landscape.png) | **Landscape.** Swaps width and height. Here the app's fixed header grows to two rows and covers the KPI cards. |
-| ![Footer reading watching dist/** changed 12:58:08 1 reload](docs/images/live-reload.png) | **Live reload.** Hash a URL or watch files; the footer shows what is watched, the fingerprint and the last change. |
-| ![Six screenshots tiled on a dark sheet](docs/images/contact-sheet.png) | **`wontfit shoot`.** A PNG per page x width plus this contact sheet, ready for a pull request. |
+| ![Three pages at three phone widths](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/harness.png) | **The harness.** One column per page x width; each frame carries its own verdict. Layout state lives in the URL, so this is a shareable link. |
+| ![A frame flagged red with its overflow culprit](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/overflow.png) | **Overflow, named.** The pricing table is 583px too wide; the culprit list says `table.compare` and its bounds. |
+| ![Dashed outlines around small buttons](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/tap-targets.png) | **Tap targets.** Press `t` to outline every interactive element under 44x44 CSS px inside the frame. |
+| ![The same heading highlighted in three frames](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/inspect.png) | **Inspect across frames.** Press `i`, hover an element in one frame, and it is highlighted with its size in every frame; the footer shows the selector. |
+| ![Two landscape frames with a header covering content](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/landscape.png) | **Landscape.** Swaps width and height. Here the app's fixed header grows to two rows and covers the KPI cards. |
+| ![Footer reading watching dist/** changed 12:58:08 1 reload](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/live-reload.png) | **Live reload.** Hash a URL or watch files; the footer shows what is watched, the fingerprint and the last change. |
+| ![Six screenshots tiled on a dark sheet](https://raw.githubusercontent.com/InfoDiveLabs/wontfit/main/docs/images/contact-sheet.png) | **`wontfit shoot`.** A PNG per page x width plus this contact sheet, ready for a pull request. |
 
 ## Why not DevTools device mode, Responsively or Polypane?
 
@@ -144,7 +133,7 @@ arrays, tables); 3.11+ uses `tomllib`.
 ## In CI
 
 ```sh
-pip install 'wontfit[shoot] @ git+https://github.com/InfoDiveLabs/wontfit@v0.2.0'
+pip install 'wontfit[shoot]'
 playwright install --with-deps chromium
 wontfit check --pages /,/pricing --widths se,iphone15,pixel8 --fail-on overflow --json report.json
 wontfit shoot --pages /,/pricing --widths se,iphone15,pixel8 --out shots
@@ -164,12 +153,12 @@ FAIL (overflow):
 
 A complete GitHub Actions job that starts your app, runs `check`, and uploads
 the report and screenshots as artifacts is in
-[docs/ci-example.yml](docs/ci-example.yml); a pre-push hook is in
-[docs/pre-commit-example.yaml](docs/pre-commit-example.yaml).
+[docs/ci-example.yml](https://github.com/InfoDiveLabs/wontfit/blob/main/docs/ci-example.yml); a pre-push hook is in
+[docs/pre-commit-example.yaml](https://github.com/InfoDiveLabs/wontfit/blob/main/docs/pre-commit-example.yaml).
 
 ## Your stack
 
-[docs/recipes.md](docs/recipes.md) has copy-paste commands and the one gotcha
+[docs/recipes.md](https://github.com/InfoDiveLabs/wontfit/blob/main/docs/recipes.md) has copy-paste commands and the one gotcha
 per framework for Vite/React, Next.js, Nuxt, SvelteKit, Django, Flask/FastAPI,
 Rails, Go, Laravel, static sites, Storybook and Docker Compose, including how
 to keep HMR working (its WebSocket does not go through the proxy).
@@ -280,7 +269,7 @@ make showcase                       # the Ledgerly demo site + harness
 PY=.venv-shots/bin/python make screenshots   # regenerate docs/images (needs playwright, pillow)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
+See [CONTRIBUTING.md](https://github.com/InfoDiveLabs/wontfit/blob/main/CONTRIBUTING.md) and [CHANGELOG.md](https://github.com/InfoDiveLabs/wontfit/blob/main/CHANGELOG.md).
 
 ## License
 

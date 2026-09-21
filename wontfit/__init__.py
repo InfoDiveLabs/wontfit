@@ -9,7 +9,7 @@ text under 12px. The same checks run headlessly in CI via ``wontfit check``.
 Development tool only. It binds to 127.0.0.1 and must never be exposed.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 #: Device presets: key -> (human name, CSS width px).
 #: Widths are the CSS viewport widths reported by the devices, not physical pixels.

@@ -6,6 +6,16 @@ All notable changes to wontfit are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-21
+
+### Changed
+- **Published to PyPI.** `pipx install wontfit` and `uvx wontfit` now work;
+  install instructions, the CI example and the Playwright hint use the
+  PyPI name again. Tag pushes publish to PyPI through Trusted Publishing,
+  then create the GitHub release with the same files.
+- README links and images are absolute, so they render on PyPI as well as
+  GitHub.
+
 ## [0.2.0] - 2026-09-21
 
 First public release. 0.1.0 was never tagged or published; its entry is kept
@@ -63,5 +73,6 @@ as the record of what the first cut contained.
 - `wontfit shoot` for PNG screenshots via Playwright, which stays optional.
 - Unit tests (`python3 -m unittest`), GitHub Actions on 3.9 and 3.12, Makefile.
 
-[Unreleased]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/InfoDiveLabs/wontfit/releases/tag/v0.2.0

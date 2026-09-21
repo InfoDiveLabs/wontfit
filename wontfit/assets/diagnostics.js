@@ -64,6 +64,9 @@
     var vw = root.clientWidth;
     var sw = Math.max(root.scrollWidth, doc.body ? doc.body.scrollWidth : 0);
     if (sw <= vw + 1) return null;
+    // Only the inline-end side scrolls. Content past the start edge is clipped, never
+    // scrollable, which is where skip links and visually-hidden text are parked.
+    var rtl = doc.defaultView.getComputedStyle(doc.body || root).direction === "rtl";
     var culprits = [];
     var found = [];  // outermost offenders only: a wide <td> inside a wide <table> is noise
     var all = doc.body.querySelectorAll("*");
@@ -77,7 +80,7 @@
       if (inside) continue;
       var r = el.getBoundingClientRect();
       if (!r.width) continue;
-      if (r.right > vw + 1 || r.left < -1) {
+      if (rtl ? r.left < -1 : r.right > vw + 1) {
         found.push(el);
         culprits.push({ label: label(el), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width) });
       }

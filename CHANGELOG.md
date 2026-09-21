@@ -6,6 +6,13 @@ All notable changes to wontfit are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Overflow no longer blames elements parked past the start edge of the page,
+  such as a skip link at `left: -9999px`. That content is clipped, not
+  scrollable, but it was reported as the first culprit, so `check` named
+  `a.skip` instead of the element actually causing the horizontal scroll.
+  Right-to-left pages are handled as the mirror case.
+
 ### Changed
 - The README links to the product page and online documentation on
   infodivelabs.com. Package metadata points Homepage and Documentation there,

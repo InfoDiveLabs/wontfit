@@ -13,4 +13,4 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
-        # Needs `pip install 'wontfit[shoot]' && playwright install chromium` on the machine.
+        # Needs wontfit with the shoot extra and Chromium on the machine; see Install in the README.

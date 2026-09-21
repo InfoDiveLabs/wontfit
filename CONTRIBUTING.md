@@ -18,7 +18,7 @@ keep it that way.
 ## Setup
 
 ```sh
-git clone https://github.com/Suraj-Tiwari/wontfit
+git clone https://github.com/InfoDiveLabs/wontfit
 cd wontfit
 python3 -m unittest            # or: make test
 make lint                      # ruff, if installed (pip install ruff)

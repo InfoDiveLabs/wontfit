@@ -1,5 +1,10 @@
 # wontfit
 
+[![CI](https://github.com/InfoDiveLabs/wontfit/actions/workflows/ci.yml/badge.svg)](https://github.com/InfoDiveLabs/wontfit/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/InfoDiveLabs/wontfit)](https://github.com/InfoDiveLabs/wontfit/releases/latest)
+![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 **Find out what won't fit before your users do.**
 
 wontfit shows your running web app at phone and tablet widths side by side in
@@ -19,21 +24,37 @@ when your browser window is fullscreen.
 
 ## Install
 
-Not on PyPI yet, and the repository is private, so install from a clone:
+wontfit is not on PyPI, so install it from this repository. Pin the
+release tag; drop `@v0.2.0` to track `main`.
 
 ```sh
-git clone https://github.com/Suraj-Tiwari/wontfit && cd wontfit
-pipx install .            # or: pip install .
-python3 -m wontfit        # or run it with no install at all
+pipx install git+https://github.com/InfoDiveLabs/wontfit@v0.2.0
+# or with uv
+uv tool install git+https://github.com/InfoDiveLabs/wontfit@v0.2.0
+# or run once without installing
+uvx --from git+https://github.com/InfoDiveLabs/wontfit@v0.2.0 wontfit --help
 ```
 
-With access to the repository you can also install straight from git:
+Every [release](https://github.com/InfoDiveLabs/wontfit/releases) also
+carries a wheel and an sdist, so you can install without git:
 
 ```sh
-pipx install git+https://github.com/Suraj-Tiwari/wontfit
+pipx install https://github.com/InfoDiveLabs/wontfit/releases/download/v0.2.0/wontfit-0.2.0-py3-none-any.whl
 ```
 
-Once published: `pipx install wontfit` / `uvx wontfit`.
+`wontfit check` and `wontfit shoot` drive a headless browser, which is an
+optional extra:
+
+```sh
+pipx install --include-deps 'wontfit[shoot] @ git+https://github.com/InfoDiveLabs/wontfit@v0.2.0'
+playwright install chromium
+```
+
+Already installed without it? `pipx inject --include-apps wontfit playwright`,
+then `playwright install chromium`.
+
+Nothing to install at all: clone it and run `python3 -m wontfit` from the
+checkout. The core is standard library only.
 
 ## Try it in 30 seconds
 
@@ -41,7 +62,7 @@ No app of your own running? The repo ships a fake product site that refuses
 to be framed and has six planted mobile bugs:
 
 ```sh
-git clone https://github.com/Suraj-Tiwari/wontfit && cd wontfit
+git clone https://github.com/InfoDiveLabs/wontfit && cd wontfit
 make showcase        # starts examples/showcase on :3939 and opens the harness
 ```
 
@@ -123,7 +144,8 @@ arrays, tables); 3.11+ uses `tomllib`.
 ## In CI
 
 ```sh
-pip install 'wontfit[shoot]' && playwright install --with-deps chromium
+pip install 'wontfit[shoot] @ git+https://github.com/InfoDiveLabs/wontfit@v0.2.0'
+playwright install --with-deps chromium
 wontfit check --pages /,/pricing --widths se,iphone15,pixel8 --fail-on overflow --json report.json
 wontfit shoot --pages /,/pricing --widths se,iphone15,pixel8 --out shots
 ```
@@ -258,4 +280,10 @@ make showcase                       # the Ledgerly demo site + harness
 PY=.venv-shots/bin/python make screenshots   # regenerate docs/images (needs playwright, pillow)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md). MIT.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+MIT. Built and maintained by [InfoDive Labs](https://www.infodivelabs.com).
+Bug reports and pull requests are welcome in
+[issues](https://github.com/InfoDiveLabs/wontfit/issues).

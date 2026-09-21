@@ -1,13 +1,15 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "wontfit"
-version = "0.1.0"
+version = "0.2.0"
 description = "See your running app at phone and tablet widths side by side, and find out what won't fit before your users do."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "InfoDive Labs", email = "contact@infodivelabs.com" }]
 requires-python = ">=3.9"
 keywords = ["responsive", "mobile", "preview", "proxy", "iframe", "devtools"]
 classifiers = [
@@ -15,7 +17,6 @@ classifiers = [
   "Environment :: Console",
   "Environment :: Web Environment",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
@@ -36,10 +37,10 @@ dev = ["ruff"]
 wontfit = "wontfit.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Suraj-Tiwari/wontfit"
-Repository = "https://github.com/Suraj-Tiwari/wontfit"
-Issues = "https://github.com/Suraj-Tiwari/wontfit/issues"
-Changelog = "https://github.com/Suraj-Tiwari/wontfit/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/InfoDiveLabs/wontfit"
+Repository = "https://github.com/InfoDiveLabs/wontfit"
+Issues = "https://github.com/InfoDiveLabs/wontfit/issues"
+Changelog = "https://github.com/InfoDiveLabs/wontfit/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["wontfit"]

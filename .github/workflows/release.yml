@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tag must match the package version
+        run: |
+          version=$(python -c "import wontfit; print(wontfit.__version__)")
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME but wontfit.__version__ is $version"; exit 1; }
+
+      - name: Run tests
+        run: python -m unittest
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --quiet build
+          python -m build
+          python -m pip install --quiet dist/*.whl
+          wontfit --version
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on && /^\[[^]]+\]: / { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "no CHANGELOG.md entry for $version"; exit 1; }
+          cat >> notes.md <<NOTES
+
+          ## Install
+
+          \`\`\`sh
+          pipx install git+https://github.com/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}
+          # or the wheel attached below
+          pipx install https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/wontfit-${version}-py3-none-any.whl
+          \`\`\`
+          NOTES
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "wontfit $GITHUB_REF_NAME" --notes-file notes.md --verify-tag

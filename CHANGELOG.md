@@ -6,6 +6,11 @@ All notable changes to wontfit are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-21
+
+First public release. 0.1.0 was never tagged or published; its entry is kept
+as the record of what the first cut contained.
+
 ### Added
 - `wontfit.toml` / `[tool.wontfit]` in `pyproject.toml`, discovered from
   the current directory upward; flags override. `wontfit init` writes a
@@ -21,6 +26,12 @@ All notable changes to wontfit are recorded here. The format follows
   `docs/recipes.md` for twelve stacks, `docs/ci-example.yml` and a pre-push hook example.
 
 ### Changed
+- **Moved to [InfoDiveLabs/wontfit](https://github.com/InfoDiveLabs/wontfit) and
+  made public.** Install from a release tag
+  (`pipx install git+https://github.com/InfoDiveLabs/wontfit@v0.2.0`) or the
+  wheel attached to the GitHub release; the package is not on PyPI.
+- The Playwright install hint no longer suggests `pip install 'wontfit[shoot]'`,
+  which cannot resolve while the package is not on PyPI.
 - **Renamed the project from `phoneframes` to `wontfit`,** before any release.
   The package, module and console script are `wontfit`; the harness moved from
   `/__phoneframes` to `/__wontfit`; config lives in `wontfit.toml` or
@@ -51,3 +62,6 @@ All notable changes to wontfit are recorded here. The format follows
   `--watch-interval`) and local file mtimes (`--watch-file`), with state in the footer.
 - `wontfit shoot` for PNG screenshots via Playwright, which stays optional.
 - Unit tests (`python3 -m unittest`), GitHub Actions on 3.9 and 3.12, Makefile.
+
+[Unreleased]: https://github.com/InfoDiveLabs/wontfit/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/InfoDiveLabs/wontfit/releases/tag/v0.2.0
